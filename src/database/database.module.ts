@@ -12,10 +12,10 @@ export const SUPABASE_CLIENT = Symbol('SUPABASE_CLIENT');
 function createPool(connectionString: string): Pool {
   return new Pool({
     connectionString,
-    max: 10, // max number of clients in the pool
+    max: 10,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 5_000,
-    ssl: { rejectUnauthorized: false }, // required for Supabase
+    ssl: { rejectUnauthorized: false },
   });
 }
 
@@ -24,12 +24,12 @@ function createPool(connectionString: string): Pool {
   providers: [
     {
       provide: WRITE_POOL,
-      useFactory: (c: ConfigService) => createPool(c.get<string>('db.url')!),
+      useFactory: (c: ConfigService) => createPool(c.get<string>('database.url')!),
       inject: [ConfigService],
     },
     {
       provide: READ_POOL,
-      useFactory: (c: ConfigService) => createPool(c.get<string>('db.url')!),
+      useFactory: (c: ConfigService) => createPool(c.get<string>('database.url')!),
       inject: [ConfigService],
     },
     {
@@ -44,10 +44,7 @@ function createPool(connectionString: string): Pool {
     {
       provide: SUPABASE_CLIENT,
       useFactory: (c: ConfigService): SupabaseClient =>
-        createClient(
-          c.get<string>('SUPABASE_URL')!,
-          c.get<string>('SUPABASE_SERVICE_ROLE_KEY')!,
-        ) as SupabaseClient,
+        createClient(c.get<string>('SUPABASE_URL')!, c.get<string>('SUPABASE_SERVICE_ROLE_KEY')!),
       inject: [ConfigService],
     },
   ],

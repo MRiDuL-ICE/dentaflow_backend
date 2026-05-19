@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.clinics (
 
 -- Global: roles
 CREATE TABLE IF NOT EXISTS public.roles (
-  id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  id          SMALLINT        PRIMARY KEY,
   name        TEXT        UNIQUE NOT NULL,
   description TEXT,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -22,20 +22,20 @@ CREATE TABLE IF NOT EXISTS public.roles (
 
 -- Global: role permissions
 CREATE TABLE IF NOT EXISTS public.role_permissions (
-  role_id  UUID REFERENCES public.roles(id) ON DELETE CASCADE,
+  role_id  SMALLINT REFERENCES public.roles(id) ON DELETE CASCADE,
   resource TEXT NOT NULL,
   action   TEXT NOT NULL,
   PRIMARY KEY (role_id, resource, action)
 );
 
 -- Seed roles
-INSERT INTO public.roles (name, description) VALUES
-  ('super_admin',  'Platform-level administrator'),
-  ('clinic_owner', 'Full access within their clinic'),
-  ('dentist',      'Clinical access — patients, treatments, notes'),
-  ('receptionist', 'Scheduling, billing, patient basic info'),
-  ('patient',      'Portal access — own records only')
-ON CONFLICT (name) DO NOTHING;
+INSERT INTO public.roles (id, name, description) VALUES
+  (1, 'super_admin',  'Platform-level administrator'),
+  (2, 'clinic_owner', 'Full access within their clinic'),
+  (3, 'dentist',      'Clinical access — patients, treatments, notes'),
+  (4, 'receptionist', 'Scheduling, billing, patient basic info'),
+  (5, 'patient',      'Portal access — own records only')
+ON CONFLICT (id) DO NOTHING;
 
 -- Function: provision a new tenant schema
 CREATE OR REPLACE FUNCTION public.create_tenant_schema(p_schema TEXT)
