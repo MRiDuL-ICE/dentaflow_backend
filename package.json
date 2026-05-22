@@ -87,6 +87,12 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "overrides": {
+      "glob": "$glob",
+      "test-exclude/node_modules/glob": "^10.3.10",
+      "babel-plugin-istanbul/node_modules/glob": "^10.3.10",
+      "ts-jest/node_modules/glob": "^10.3.10"
+    }
   }
 }
