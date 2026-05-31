@@ -1,0 +1,12 @@
+{
+  "databaseUrl": "env:DATABASE_URL",
+  "migrationsTable": "pgmigrations",
+  "dir": "migrations/public",
+  "schema": "public",
+  "createSchema": false,
+  "ssl": true,
+  "rejectUnauthorized": false,
+  "decamelize": false,
+  "extension": "js",
+  "timestamp": false
+}

@@ -17,6 +17,8 @@
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "typeRoots": ["./src/types", "./node_modules/@types"],
     "paths": {
       "@common/*": ["src/common/*"],
       "@config/*": ["src/config/*"],
