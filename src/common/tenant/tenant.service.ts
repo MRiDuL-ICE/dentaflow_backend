@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { Pool } from 'pg';
 import Redis from 'ioredis';
 import { WRITE_POOL, REDIS_CLIENT } from '@database/database.module';
-import { ClinicRow, TenantRecord } from './tenant-cls.interface';
+import { ClinicRow, TenantRecord } from './tenant.interface';
 
 const localTenantCache = new Map<string, TenantRecord>();
 
@@ -11,7 +11,7 @@ export class TenantService {
   constructor(
     @Inject(WRITE_POOL) private readonly pool: Pool,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
-  ) {}
+  ) { }
 
   async resolve(slug: string): Promise<TenantRecord | null> {
     const key = slug.trim().toLowerCase();

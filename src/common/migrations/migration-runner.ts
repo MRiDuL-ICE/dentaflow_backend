@@ -9,7 +9,7 @@ export async function runTenantMigrations(
   await runner({
     databaseUrl,
     migrationsTable: 'pgmigrations',
-    dir:    path.join(process.cwd(), 'migrations/public'),
+    dir:    path.join(process.cwd(), 'migrations/tenant'),
     schema: schemaName,
     createSchema: true,
     direction: 'up',
