@@ -9,13 +9,20 @@ export class TenantMiddleware implements NestMiddleware {
   constructor(
     private readonly tenantService: TenantService,
     private readonly cls: ClsService<TenantClsStore>,
-  ) {}
+  ) { }
 
   async use(
     req: FastifyRequest['raw'],
     _res: FastifyReply['raw'],
     next: (err?: any) => void,
   ): Promise<void> {
+    //console.log('MIDDLEWARE URL:', req.url, (req as any).originalUrl, (req as any).routerPath);
+    const rawReq = req as FastifyRequest['raw'] & { originalUrl?: string };
+    const fullUrl = rawReq.originalUrl ?? req.url ?? '';
+
+    if (fullUrl.startsWith('/api/health') || fullUrl.startsWith('/api/docs')) {
+      return next();
+    }
     try {
       const slug = String(req.headers['x-clinic-slug'] ?? '')
         .trim()

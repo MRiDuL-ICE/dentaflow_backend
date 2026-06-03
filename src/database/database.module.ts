@@ -3,6 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { Pool } from 'pg';
 import Redis from 'ioredis';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import * as ws from 'ws';
+
+if (!globalThis.WebSocket) {
+  globalThis.WebSocket = (ws as any).WebSocket as typeof WebSocket;
+}
 
 export const WRITE_POOL = Symbol('WRITE_POOL');
 export const READ_POOL = Symbol('READ_POOL');
@@ -24,12 +29,12 @@ function createPool(connectionString: string): Pool {
   providers: [
     {
       provide: WRITE_POOL,
-      useFactory: (c: ConfigService) => createPool(c.get<string>('database.url')!),
+      useFactory: (c: ConfigService) => createPool(c.get<string>('db.url')!),
       inject: [ConfigService],
     },
     {
       provide: READ_POOL,
-      useFactory: (c: ConfigService) => createPool(c.get<string>('database.url')!),
+      useFactory: (c: ConfigService) => createPool(c.get<string>('db.url')!),
       inject: [ConfigService],
     },
     {
@@ -44,10 +49,15 @@ function createPool(connectionString: string): Pool {
     {
       provide: SUPABASE_CLIENT,
       useFactory: (c: ConfigService): SupabaseClient =>
-        createClient(c.get<string>('SUPABASE_URL')!, c.get<string>('SUPABASE_SERVICE_ROLE_KEY')!),
+        createClient(c.get<string>('SUPABASE_URL')!, c.get<string>('SUPABASE_SERVICE_ROLE_KEY')!, {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+          },
+        }) as SupabaseClient,
       inject: [ConfigService],
     },
   ],
   exports: [WRITE_POOL, READ_POOL, REDIS_CLIENT, SUPABASE_CLIENT],
 })
-export class DatabaseModule {}
+export class DatabaseModule { }

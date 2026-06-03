@@ -1,0 +1,58 @@
+// src/auth/roles/role-permissions.ts
+import { AppRole } from './roles';
+import { PERMISSIONS, type Permission } from '../permissions/permissions';
+
+export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
+  super_admin: [
+    PERMISSIONS.PATIENT_READ,
+    PERMISSIONS.PATIENT_WRITE,
+    PERMISSIONS.APPOINTMENT_READ,
+    PERMISSIONS.APPOINTMENT_WRITE,
+    PERMISSIONS.BILLING_READ,
+    PERMISSIONS.BILLING_MANAGE,
+    PERMISSIONS.CLINIC_SETTINGS_READ,
+    PERMISSIONS.CLINIC_SETTINGS_EDIT,
+    PERMISSIONS.USER_MANAGE,
+    PERMISSIONS.DATA_EXPORT,
+  ],
+  clinic_owner: [
+    PERMISSIONS.PATIENT_READ,
+    PERMISSIONS.PATIENT_WRITE,
+    PERMISSIONS.APPOINTMENT_READ,
+    PERMISSIONS.APPOINTMENT_WRITE,
+    PERMISSIONS.BILLING_READ,
+    PERMISSIONS.BILLING_MANAGE,
+    PERMISSIONS.CLINIC_SETTINGS_READ,
+    PERMISSIONS.CLINIC_SETTINGS_EDIT,
+    PERMISSIONS.DATA_EXPORT,
+  ],
+  dentist: [
+    PERMISSIONS.PATIENT_READ,
+    PERMISSIONS.PATIENT_WRITE,
+    PERMISSIONS.APPOINTMENT_READ,
+    PERMISSIONS.APPOINTMENT_WRITE,
+    PERMISSIONS.CLINIC_SETTINGS_READ,
+  ],
+  receptionist: [
+    PERMISSIONS.PATIENT_READ,
+    PERMISSIONS.APPOINTMENT_READ,
+    PERMISSIONS.APPOINTMENT_WRITE,
+    PERMISSIONS.BILLING_READ,
+    PERMISSIONS.CLINIC_SETTINGS_READ,
+  ],
+  patient: [PERMISSIONS.PATIENT_READ, PERMISSIONS.APPOINTMENT_READ],
+} as const;
+
+/**
+ * Get all permissions for a given role name
+ */
+export function getPermissionsForRole(role: AppRole): Permission[] {
+  return ROLE_PERMISSIONS[role];
+}
+
+/**
+ * Check if a role has a specific permission
+ */
+export function roleHasPermission(role: AppRole, permission: Permission): boolean {
+  return ROLE_PERMISSIONS[role].includes(permission);
+}
