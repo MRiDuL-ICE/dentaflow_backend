@@ -11,7 +11,7 @@ export class HealthController {
   constructor(
     @Inject(WRITE_POOL) private readonly pool: Pool,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
-  ) { }
+  ) {}
 
   @Get()
   @Public()

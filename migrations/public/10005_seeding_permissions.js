@@ -1,5 +1,4 @@
 exports.up = (pgm) => {
-
   // Seed capabilities
   pgm.sql(`
     INSERT INTO public.role_permissions (role_id, resource, action) VALUES
@@ -46,4 +45,3 @@ exports.up = (pgm) => {
     ON CONFLICT (role_id, resource, action) DO NOTHING
   `);
 };
-

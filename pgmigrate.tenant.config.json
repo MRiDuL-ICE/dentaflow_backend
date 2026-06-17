@@ -1,9 +1,9 @@
 {
-  "databaseUrl":    "env:DATABASE_URL",
+  "databaseUrl": "env:DATABASE_URL",
   "migrationsTable": "pgmigrations",
-  "dir":            "migrations/tenant",
-  "createSchema":   true,
-  "ssl":             true,
+  "dir": "migrations/tenant",
+  "createSchema": true,
+  "ssl": true,
   "rejectUnauthorized": false,
   "decamelize": false,
   "extension": "js",

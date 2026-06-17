@@ -6,6 +6,7 @@ import { AppModule } from './app.module';
 import { FastifyRequest } from 'fastify';
 import { REDIS_CLIENT } from './database/database.module';
 import Redis from 'ioredis';
+import fastifyRateLimit from '@fastify/rate-limit';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -26,7 +27,7 @@ async function bootstrap(): Promise<void> {
 
   const redisClient = app.get<Redis>(REDIS_CLIENT);
 
-  await app.register(await import('@fastify/rate-limit'), {
+  await app.register(fastifyRateLimit, {
     global: true,
     max: 100,
     timeWindow: '15 minutes',

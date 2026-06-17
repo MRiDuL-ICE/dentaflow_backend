@@ -9,7 +9,7 @@ export abstract class BaseRepository {
     @Inject(WRITE_POOL) private readonly writePool: Pool,
     @Inject(READ_POOL) private readonly readPool: Pool,
     private readonly cls: ClsService<TenantClsStore>,
-  ) { }
+  ) {}
 
   private get schema(): string {
     const schema = this.cls.get('schemaName');

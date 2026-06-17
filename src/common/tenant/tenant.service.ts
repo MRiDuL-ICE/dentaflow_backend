@@ -11,7 +11,7 @@ export class TenantService {
   constructor(
     @Inject(WRITE_POOL) private readonly pool: Pool,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
-  ) { }
+  ) {}
 
   async resolve(slug: string): Promise<TenantRecord | null> {
     const key = slug.trim().toLowerCase();

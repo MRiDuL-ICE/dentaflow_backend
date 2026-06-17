@@ -9,7 +9,7 @@ export class TenantMiddleware implements NestMiddleware {
   constructor(
     private readonly tenantService: TenantService,
     private readonly cls: ClsService<TenantClsStore>,
-  ) { }
+  ) {}
 
   async use(
     req: FastifyRequest['raw'],

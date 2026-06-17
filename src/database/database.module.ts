@@ -6,6 +6,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import * as ws from 'ws';
 
 if (!globalThis.WebSocket) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   globalThis.WebSocket = (ws as any).WebSocket as typeof WebSocket;
 }
 
@@ -60,4 +61,4 @@ function createPool(connectionString: string): Pool {
   ],
   exports: [WRITE_POOL, READ_POOL, REDIS_CLIENT, SUPABASE_CLIENT],
 })
-export class DatabaseModule { }
+export class DatabaseModule {}

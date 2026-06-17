@@ -1,4 +1,3 @@
-// src/auth/roles/role-permissions.ts
 import { AppRole } from './roles';
 import { PERMISSIONS, type Permission } from '../permissions/permissions';
 

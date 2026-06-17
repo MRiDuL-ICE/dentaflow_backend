@@ -7,7 +7,6 @@ export interface RequestWithUser {
     email?: string;
     roles: AppRole[];
     permissions: Permission[];
-    clinicId: string; // Important: Array
-    // You can add more fields later: clinicId, etc.
+    clinicId: string;
   };
 }
