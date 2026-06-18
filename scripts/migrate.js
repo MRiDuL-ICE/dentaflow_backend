@@ -1,12 +1,12 @@
 /* eslint-disable */
 const { runner } = require('node-pg-migrate');
-const path    = require('path');
-const dotenv  = require('dotenv');
+const path = require('path');
+const dotenv = require('dotenv');
 
 dotenv.config();
 
 const direction = process.argv[2] || 'up';
-const target    = process.argv[3] || 'public';  // 'public' or 'tenant'
+const target = process.argv[3] || 'public'; // 'public' or 'tenant'
 const schema = process.argv[4] || (target === 'tenant' ? 'tenant' : 'public');
 
 async function migrate() {
@@ -16,13 +16,13 @@ async function migrate() {
       ssl: { rejectUnauthorized: false },
     },
     migrationsTable: 'pgmigrations',
-    migrationsSchema: target === 'tenant' ? schema : 'public',  // <-- add this line
-    dir:             path.join(process.cwd(), `migrations/${target}`),
+    migrationsSchema: target === 'tenant' ? schema : 'public', // <-- add this line
+    dir: path.join(process.cwd(), `migrations/${target}`),
     schema,
-    createSchema:    target === 'tenant',
+    createSchema: target === 'tenant',
     direction,
-    verbose:         true,
-    timestamp:       false,
+    verbose: true,
+    timestamp: false,
   });
 }
 

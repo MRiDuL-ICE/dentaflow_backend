@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ClsModule } from 'nestjs-cls';
@@ -11,6 +11,8 @@ import redisConfig from '@config/redis.config';
 import jwtConfig from '@config/jwt.config';
 import { RolesGuard } from './common/rbac/roles.guard';
 import { HealthModule } from './modules/health/health.module';
+import { EmailModule } from '@common/email/email.module';
+import { AuthModule } from '@modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -30,11 +32,15 @@ import { HealthModule } from './modules/health/health.module';
 
     DatabaseModule,
     HealthModule,
+    EmailModule,
+    AuthModule,
   ],
   providers: [TenantService, { provide: APP_GUARD, useClass: RolesGuard }],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(TenantMiddleware).forRoutes('*');
+    consumer
+      .apply(TenantMiddleware) 
+      .forRoutes('*');
   }
 }
