@@ -13,6 +13,8 @@ import { RolesGuard } from './common/rbac/roles.guard';
 import { HealthModule } from './modules/health/health.module';
 import { EmailModule } from '@common/email/email.module';
 import { AuthModule } from '@modules/auth/auth.module';
+import { SuperAdminModule } from '@modules/super-admin/super-admin.module';
+import { ClinicModule } from '@modules/clinic/clinic.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { AuthModule } from '@modules/auth/auth.module';
     HealthModule,
     EmailModule,
     AuthModule,
+    SuperAdminModule,
+    ClinicModule,
   ],
   providers: [TenantService, { provide: APP_GUARD, useClass: RolesGuard }],
 })

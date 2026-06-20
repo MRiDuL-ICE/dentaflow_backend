@@ -1,4 +1,4 @@
-import { AppRole } from './roles';
+import { AppRole } from './roles.decorator';
 
 export const ROLE_IDS = {
   SUPER_ADMIN: 1,

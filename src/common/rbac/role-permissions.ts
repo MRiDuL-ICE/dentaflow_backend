@@ -1,4 +1,4 @@
-import { AppRole } from './roles';
+import { AppRole } from './roles.decorator';
 import { PERMISSIONS, type Permission } from '../permissions/permissions';
 
 export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {

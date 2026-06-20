@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { AppRole } from '../rbac/roles';
+import { AppRole } from '../rbac/roles.decorator';
 import { RequestWithUser } from '../permissions/request-with-user.interface';
 
 export interface AuthUser {

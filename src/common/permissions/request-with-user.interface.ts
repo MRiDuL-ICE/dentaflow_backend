@@ -1,4 +1,4 @@
-import { type AppRole } from '../rbac/roles';
+import { type AppRole } from '../rbac/roles.decorator';
 import { Permission } from './permissions';
 
 export interface RequestWithUser {

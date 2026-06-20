@@ -16,7 +16,7 @@ async function migrate() {
       ssl: { rejectUnauthorized: false },
     },
     migrationsTable: 'pgmigrations',
-    migrationsSchema: target === 'tenant' ? schema : 'public', // <-- add this line
+    migrationsSchema: target === 'tenant' ? schema : 'public', 
     dir: path.join(process.cwd(), `migrations/${target}`),
     schema,
     createSchema: target === 'tenant',

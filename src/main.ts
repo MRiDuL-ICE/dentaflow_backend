@@ -7,12 +7,15 @@ import { FastifyRequest } from 'fastify';
 import { REDIS_CLIENT } from './database/database.module';
 import Redis from 'ioredis';
 import fastifyRateLimit from '@fastify/rate-limit';
+import { GlobalExceptionFilter } from '@common/filters/global-exception.filter';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({ logger: false }),
   );
+
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   // ── Fastify plugins ───────────────────────────────────
   await app.register(await import('@fastify/helmet'));
