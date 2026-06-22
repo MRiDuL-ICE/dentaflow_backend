@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ClinicRegisterDto } from '@modules/clinic/dto/clinic-register.dto';
+import { ConsoleLogger, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 
@@ -13,9 +14,11 @@ export class EmailService {
     this.from = this.config.get<string>('app.emailFrom')!;
   }
 
-  async sendMagicLink(email: string, token: string): Promise<void> {
+  async sendMagicLink(email: string, token: string, clinicSlug: string): Promise<void> {
     const appUrl = this.config.get<string>('app.url');
-    const link = `${appUrl}/api/auth/magic-link/verify?token=${token}`;
+    const link = `${appUrl}/api/auth/magic-link/verify?token=${token}&clinic=${clinicSlug}`;
+
+    console.log("From:", this.from);
 
     const { error } = await this.resend.emails.send({
       from: this.from,
@@ -38,7 +41,7 @@ export class EmailService {
 
     if (error) {
       this.logger.error(`Failed to send magic link to ${email}:`, error);
-      throw new Error('Failed to send magic link email');
+      return;
     }
 
     this.logger.log(`Magic link sent to ${email}`);

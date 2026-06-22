@@ -4,6 +4,7 @@ import {
   ConflictException,
   BadRequestException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -17,6 +18,7 @@ import { REDIS_CLIENT } from '@database/database.module';
 import { JwtPayload } from './types/jwt-payload.type';
 import { AuthResponse, AuthTokens } from './types/auth-response.type';
 import { ROLE_IDS } from '@common/rbac/role-ids.constant';
+import { TenantService } from '@common/tenant/tenant.service';
 
 const BCRYPT_ROUNDS      = 12;
 const REFRESH_TTL_DAYS   = 30;
@@ -31,6 +33,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly config:     ConfigService,
     private readonly email:      EmailService,
+    private readonly tenantService: TenantService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
 
@@ -178,9 +181,12 @@ export class AuthService {
 
   // ── Magic Link ─────────────────────────────────────────
 
-  async sendMagicLink(email: string): Promise<void> {
+  async sendMagicLink(email: string, clinicSlug: string): Promise<void> {
     const user  = await this.authRepo.findUserByEmail(email);
     const token = uuidv4();
+
+
+    console.log("Clinic Slug:", clinicSlug);
 
     const expiresAt = new Date(
       Date.now() + MAGIC_LINK_TTL_MIN * 60 * 1000,
@@ -201,7 +207,7 @@ export class AuthService {
       MAGIC_LINK_TTL_MIN * 60,
     );
 
-    await this.email.sendMagicLink(email, token);
+    await this.email.sendMagicLink(email, token, clinicSlug);
   }
 
   async verifyMagicLink(data: {
@@ -328,4 +334,10 @@ export class AuthService {
     };
     return map[roleId] ?? 'patient';
   }
+
+  async resolveClinicIdFromSlug(slug: string): Promise<string> {
+  const tenant = await this.tenantService.resolve(slug);
+  if (!tenant) throw new NotFoundException(`Clinic not found: ${slug}`);
+  return tenant.id;
+}
 }

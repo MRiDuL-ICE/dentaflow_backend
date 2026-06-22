@@ -20,7 +20,7 @@ export class TenantMiddleware implements NestMiddleware {
     const rawReq = req as FastifyRequest['raw'] & { originalUrl?: string };
     const fullUrl = rawReq.originalUrl ?? req.url ?? '';
 
-    if (fullUrl.startsWith('/api/health') || fullUrl.startsWith('/api/docs') || fullUrl.startsWith('/api/super-admin/login') || fullUrl.startsWith('/api/clinics/register')) {
+    if (fullUrl.startsWith('/api/health') || fullUrl.startsWith('/api/docs') || fullUrl.startsWith('/api/super-admin/login') || fullUrl.startsWith('/api/clinics/register') || fullUrl.startsWith('/api/auth/magic-link/verify')) {
       return next();
     }
 

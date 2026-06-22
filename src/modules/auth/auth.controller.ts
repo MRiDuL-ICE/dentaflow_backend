@@ -97,7 +97,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request magic link email' })
   async requestMagicLink(@Body() dto: MagicLinkRequestDto) {
-    await this.authService.sendMagicLink(dto.email);
+    await this.authService.sendMagicLink(dto.email, dto.clinicSlug);
     return { message: 'Magic link sent if email exists' };
   }
 
