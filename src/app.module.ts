@@ -43,8 +43,6 @@ import { ClinicModule } from '@modules/clinic/clinic.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer
-      .apply(TenantMiddleware) 
-      .forRoutes('*');
+    consumer.apply(TenantMiddleware).forRoutes('*');
   }
 }

@@ -7,19 +7,19 @@ export class ClinicService {
 
   async selfRegister(data: {
     clinicName: string;
-    slug:       string;
-    email:      string;
-    firstName:  string;
-    lastName:   string;
-    password:   string;
+    slug: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
   }) {
     return this.superAdminService.createClinic({
-      clinicName:     data.clinicName,
-      slug:           data.slug,
-      ownerEmail:     data.email,
+      clinicName: data.clinicName,
+      slug: data.slug,
+      ownerEmail: data.email,
       ownerFirstName: data.firstName,
-      ownerLastName:  data.lastName,
-      ownerPassword:  data.password,
+      ownerLastName: data.lastName,
+      ownerPassword: data.password,
     });
   }
 }

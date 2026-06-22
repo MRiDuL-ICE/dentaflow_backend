@@ -18,7 +18,7 @@ export class EmailService {
     const appUrl = this.config.get<string>('app.url');
     const link = `${appUrl}/api/auth/magic-link/verify?token=${token}&clinic=${clinicSlug}`;
 
-    console.log("From:", this.from);
+    console.log('From:', this.from);
 
     const { error } = await this.resend.emails.send({
       from: this.from,

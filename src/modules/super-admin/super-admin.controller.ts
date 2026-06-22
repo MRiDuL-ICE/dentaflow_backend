@@ -1,11 +1,5 @@
-import {
-  Controller, Post, Body,
-  HttpCode, HttpStatus, UseGuards,
-} from '@nestjs/common';
-import {
-  ApiTags, ApiOperation,
-  ApiBearerAuth, ApiResponse,
-} from '@nestjs/swagger';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { SuperAdminService } from './super-admin.service';
 import { SuperAdminLoginDto } from './dto/super-admin-login.dto';
 import { CreateClinicDto } from './dto/create-clinic.dto';
@@ -35,12 +29,12 @@ export class SuperAdminController {
   @ApiResponse({ status: 409, description: 'Slug already taken' })
   async createClinic(@Body() dto: CreateClinicDto) {
     return this.superAdminService.createClinic({
-      clinicName:     dto.clinicName,
-      slug:           dto.slug,
-      ownerEmail:     dto.ownerEmail,
+      clinicName: dto.clinicName,
+      slug: dto.slug,
+      ownerEmail: dto.ownerEmail,
       ownerFirstName: dto.ownerFirstName,
-      ownerLastName:  dto.ownerLastName,
-      ownerPassword:  dto.ownerPassword,
+      ownerLastName: dto.ownerLastName,
+      ownerPassword: dto.ownerPassword,
     });
   }
 }

@@ -9,4 +9,3 @@ export const ROLES_KEY = 'roles';
  * Usage: @Roles('super_admin', 'clinic_owner')
  */
 export const Roles = (...roles: AppRole[]) => SetMetadata(ROLES_KEY, roles);
-

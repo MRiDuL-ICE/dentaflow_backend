@@ -1,7 +1,4 @@
-import {
-  Injectable, ConflictException,
-  UnauthorizedException, Logger,
-} from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Inject } from '@nestjs/common';
@@ -20,11 +17,11 @@ export class SuperAdminService {
 
   constructor(
     @Inject(WRITE_POOL) private readonly writePool: Pool,
-    @Inject(READ_POOL)  private readonly readPool:  Pool,
-    @Inject(REDIS_CLIENT) private readonly redis:   Redis,
-    private readonly authRepo:    AuthRepository,
-    private readonly jwtService:  JwtService,
-    private readonly config:      ConfigService,
+    @Inject(READ_POOL) private readonly readPool: Pool,
+    @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    private readonly authRepo: AuthRepository,
+    private readonly jwtService: JwtService,
+    private readonly config: ConfigService,
   ) {}
 
   async login(email: string, password: string) {
@@ -46,46 +43,45 @@ export class SuperAdminService {
 
     const accessToken = this.jwtService.sign(
       {
-        sub:      user.id,
-        email:    user.email,
-        roles:    ['super_admin'],
+        sub: user.id,
+        email: user.email,
+        roles: ['super_admin'],
         clinicId: null,
       },
       { expiresIn: '1h' },
     );
 
     const refreshToken = uuidv4();
-    const expiresAt    = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     await this.authRepo.saveRefreshToken({
-      userId: user.id, token: refreshToken, expiresAt,
+      userId: user.id,
+      token: refreshToken,
+      expiresAt,
     });
 
-    await this.redis.set(
-      `refresh:${refreshToken}`, user.id,
-      'EX', 30 * 24 * 60 * 60,
-    );
+    await this.redis.set(`refresh:${refreshToken}`, user.id, 'EX', 30 * 24 * 60 * 60);
 
     return {
       user: {
-        id:        user.id,
-        email:     user.email,
+        id: user.id,
+        email: user.email,
         firstName: user.firstName,
-        lastName:  user.lastName,
-        roles:     ['super_admin'],
-        clinicId:  null,
+        lastName: user.lastName,
+        roles: ['super_admin'],
+        clinicId: null,
       },
       tokens: { accessToken, refreshToken, expiresIn: 3600 },
     };
   }
 
   async createClinic(data: {
-    clinicName:     string;
-    slug:           string;
-    ownerEmail:     string;
+    clinicName: string;
+    slug: string;
+    ownerEmail: string;
     ownerFirstName: string;
-    ownerLastName:  string;
-    ownerPassword:  string;
+    ownerLastName: string;
+    ownerPassword: string;
   }) {
     // Check slug uniqueness
     const { rows: existing } = await this.readPool.query(
@@ -94,9 +90,9 @@ export class SuperAdminService {
     );
     if (existing[0]) throw new ConflictException('Clinic slug already taken');
 
-    const schemaName   = `clinic_${Date.now()}`;
+    const schemaName = `clinic_${Date.now()}`;
     const passwordHash = await bcrypt.hash(data.ownerPassword, 12);
-    const databaseUrl  = this.config.get<string>('db.url')!;
+    const databaseUrl = this.config.get<string>('db.url')!;
 
     const client = await this.writePool.connect();
     try {
@@ -115,10 +111,10 @@ export class SuperAdminService {
       let user = await this.authRepo.findUserByEmail(data.ownerEmail);
       if (!user) {
         user = await this.authRepo.createUser({
-          email:        data.ownerEmail,
+          email: data.ownerEmail,
           passwordHash,
-          firstName:    data.ownerFirstName,
-          lastName:     data.ownerLastName,
+          firstName: data.ownerFirstName,
+          lastName: data.ownerLastName,
         });
       }
 
@@ -133,9 +129,7 @@ export class SuperAdminService {
       await client.query('COMMIT');
 
       // Provision tenant schema + run migrations
-      await client.query(
-        `SELECT public.create_tenant_schema($1)`, [schemaName],
-      );
+      await client.query(`SELECT public.create_tenant_schema($1)`, [schemaName]);
 
       this.logger.log(`DB URL for migrations: ${databaseUrl}`);
       await runTenantMigrations(schemaName, databaseUrl);
@@ -145,10 +139,10 @@ export class SuperAdminService {
       return {
         clinicId,
         clinicName: data.clinicName,
-        slug:       data.slug,
+        slug: data.slug,
         schemaName,
         owner: {
-          id:    user.id,
+          id: user.id,
           email: user.email,
         },
       };

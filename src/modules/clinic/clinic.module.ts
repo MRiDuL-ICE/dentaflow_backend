@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ClinicController }  from './clinic.controller';
-import { ClinicService }     from './clinic.service';
-import { SuperAdminModule }  from '@modules/super-admin/super-admin.module';
+import { ClinicController } from './clinic.controller';
+import { ClinicService } from './clinic.service';
+import { SuperAdminModule } from '@modules/super-admin/super-admin.module';
 
 @Module({
-  imports:     [SuperAdminModule],
+  imports: [SuperAdminModule],
   controllers: [ClinicController],
-  providers:   [ClinicService],
-  exports:     [ClinicService],
+  providers: [ClinicService],
+  exports: [ClinicService],
 })
 export class ClinicModule {}

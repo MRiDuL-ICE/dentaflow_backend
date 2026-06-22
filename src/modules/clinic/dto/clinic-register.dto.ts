@@ -1,8 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsString, IsEmail,
-  MinLength, MaxLength, Matches,
-} from 'class-validator';
+import { IsString, IsEmail, MinLength, MaxLength, Matches } from 'class-validator';
 
 export class ClinicRegisterDto {
   @ApiProperty({ example: 'Bright Smile Dental' })

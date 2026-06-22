@@ -22,7 +22,8 @@
     "migrate:up": "node scripts/migrate.js up public public",
     "migrate:down": "node scripts/migrate.js down public public",
     "migrate:tenant:up": "node scripts/migrate.js up tenant tenant",
-    "migrate:tenant:down": "node scripts/migrate.js down tenant tenant"
+    "migrate:tenant:down": "node scripts/migrate.js down tenant tenant",
+    "seed:super-admin": "node scripts/seed-super-admin.js"
   },
   "dependencies": {
     "@fastify/cors": "^11.2.0",

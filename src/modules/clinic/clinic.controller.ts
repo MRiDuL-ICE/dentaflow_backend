@@ -15,11 +15,11 @@ export class ClinicController {
   async register(@Body() dto: ClinicRegisterDto) {
     return this.clinicService.selfRegister({
       clinicName: dto.clinicName,
-      slug:       dto.slug,
-      email:      dto.email,
-      firstName:  dto.firstName,
-      lastName:   dto.lastName,
-      password:   dto.password,
+      slug: dto.slug,
+      email: dto.email,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      password: dto.password,
     });
   }
 }
