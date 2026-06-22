@@ -1,12 +1,15 @@
 import {
-  Controller, Get, Post, Put,
-  Param, Body, Query,
-  UseGuards, ParseUUIDPipe,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
-import {
-  ApiTags, ApiOperation,
-  ApiBearerAuth, ApiSecurity,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { OdontogramService } from './odontogram.service';
 import { UpdateToothDto } from './dto/update-tooth.dto';
 import { CreateSnapshotDto } from './dto/snapshot.dto';

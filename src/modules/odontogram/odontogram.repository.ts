@@ -1,25 +1,20 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Pool, PoolClient } from 'pg';
+import { Injectable } from '@nestjs/common';
+import { PoolClient } from 'pg';
 import { ClsService } from 'nestjs-cls';
 import { BaseRepository } from '@common/repository/base.repository';
 import { TenantClsStore } from '@common/tenant/tenant-cls.interface';
 import { UpdateToothDto } from './dto/update-tooth.dto';
-import { READ_POOL, WRITE_POOL } from '@database/database.module';
 import { CreateSnapshotDto } from './dto/snapshot.dto';
 
 @Injectable()
 export class OdontogramRepository extends BaseRepository {
-  constructor(
-    @Inject(WRITE_POOL) writePool: Pool,
-    @Inject(READ_POOL) readPool: Pool,
-    cls: ClsService<TenantClsStore>,
-  ) {
-    super(writePool, readPool, cls);
+  constructor(cls: ClsService<TenantClsStore>) {
+    super(cls);
   }
 
   async getCurrentOdontogram(patientId: string) {
     return this.query(
-      `SELECT * FROM odontogram_current
+      `SELECT id, patient_id, tooth_number, status, pocket_depth, mobility, furcation, bleeding, notes, updated_at, updated_by FROM odontogram_current
        WHERE patient_id = $1
        ORDER BY tooth_number`,
       [patientId],
@@ -107,7 +102,7 @@ export class OdontogramRepository extends BaseRepository {
     }
 
     return this.query(
-      `SELECT * FROM odontogram_snapshots
+      `SELECT id, patient_id, appointment_id, tooth_number, status, pocket_depth, mobility, furcation, bleeding, notes, recorded_at, recorded_by FROM odontogram_snapshots
        WHERE ${conditions.join(' AND ')}
        ORDER BY recorded_at DESC`,
       values,

@@ -1,5 +1,4 @@
-import { ClinicRegisterDto } from '@modules/clinic/dto/clinic-register.dto';
-import { ConsoleLogger, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 

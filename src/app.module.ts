@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ClsModule } from 'nestjs-cls';
@@ -15,6 +15,11 @@ import { EmailModule } from '@common/email/email.module';
 import { AuthModule } from '@modules/auth/auth.module';
 import { SuperAdminModule } from '@modules/super-admin/super-admin.module';
 import { ClinicModule } from '@modules/clinic/clinic.module';
+import { AuditModule } from '@common/audit/audit.module';
+import { PatientModule } from '@modules/patient/patient.module';
+import { OdontogramModule } from '@modules/odontogram/odontogram.module';
+import { AppointmentModule } from '@modules/appointment/appointment.module';
+import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -38,8 +43,22 @@ import { ClinicModule } from '@modules/clinic/clinic.module';
     AuthModule,
     SuperAdminModule,
     ClinicModule,
+    AuditModule,
+    PatientModule,
+    OdontogramModule,
+    AppointmentModule,
   ],
-  providers: [TenantService, { provide: APP_GUARD, useClass: RolesGuard }],
+  providers: [
+    TenantService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

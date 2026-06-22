@@ -7,7 +7,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { Inject } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
@@ -31,7 +30,6 @@ export class AuthService {
   constructor(
     private readonly authRepo: AuthRepository,
     private readonly jwtService: JwtService,
-    private readonly config: ConfigService,
     private readonly email: EmailService,
     private readonly tenantService: TenantService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,

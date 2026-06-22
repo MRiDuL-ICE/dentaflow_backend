@@ -32,7 +32,7 @@ exports.up = (pgm) => {
   pgm.sql(`
     CREATE TABLE IF NOT EXISTS patient_insurance (
       id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-      patient_id       UUID        NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+      patient_id       UUID        NOT NULL REFERENCES patients(id) ON DELETE CASCADE UNIQUE,
       provider         TEXT        NOT NULL,
       policy_number    TEXT        NOT NULL,
       group_number     TEXT,
