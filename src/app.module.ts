@@ -20,6 +20,7 @@ import { PatientModule } from '@modules/patient/patient.module';
 import { OdontogramModule } from '@modules/odontogram/odontogram.module';
 import { AppointmentModule } from '@modules/appointment/appointment.module';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { TreatmentModule } from '@modules/treatment/treatment.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
     PatientModule,
     OdontogramModule,
     AppointmentModule,
+    TreatmentModule,
   ],
   providers: [
     TenantService,
