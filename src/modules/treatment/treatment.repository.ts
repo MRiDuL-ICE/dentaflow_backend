@@ -45,11 +45,11 @@ export class TreatmentRepository extends BaseRepository {
   }
 
   async findTreatments(search?: string) {
-    const conditions = ['is_active = true'];
+    const conditions = ['t.is_active = true'];
     const values: unknown[] = [];
 
     if (search) {
-      conditions.push(`to_tsvector('english', name) @@ plainto_tsquery('english', $1)`);
+      conditions.push(`to_tsvector('english', t.name) @@ plainto_tsquery('english', $1)`);
       values.push(search);
     }
 

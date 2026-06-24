@@ -22,6 +22,7 @@ import { AppointmentModule } from '@modules/appointment/appointment.module';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { TreatmentModule } from '@modules/treatment/treatment.module';
 import { BillingModule } from '@modules/billing/billing.module';
+import { InventoryModule } from '@modules/inventory/inventory.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { BillingModule } from '@modules/billing/billing.module';
     AppointmentModule,
     TreatmentModule,
     BillingModule,
+    InventoryModule,
   ],
   providers: [
     TenantService,

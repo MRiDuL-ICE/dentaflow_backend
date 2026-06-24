@@ -12,7 +12,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity, ApiQuery } from '@nestjs/swagger';
 import { TreatmentService } from './treatment.service';
 import {
   CreateTreatmentDto,
@@ -42,6 +42,7 @@ export class TreatmentController {
 
   @Get('catalog')
   @Roles('clinic_owner', 'dentist', 'receptionist')
+  @ApiQuery({ name: 'search', required: false, type: String })
   @ApiOperation({ summary: 'Get treatment catalog' })
   getCatalog(@Query('search') search?: string) {
     return this.treatmentService.findTreatments(search);
