@@ -1,7 +1,4 @@
-import {
-  Injectable, NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InventoryRepository } from './inventory.repository';
 import {
   CreateSupplierDto,
@@ -16,7 +13,7 @@ import { AuditService } from '@common/audit/audit.service';
 export class InventoryService {
   constructor(
     private readonly inventoryRepo: InventoryRepository,
-    private readonly audit:         AuditService,
+    private readonly audit: AuditService,
   ) {}
 
   // ── Suppliers ──────────────────────────────────────────
@@ -25,8 +22,8 @@ export class InventoryService {
     const supplier = await this.inventoryRepo.createSupplier(dto);
     await this.audit.log({
       userId,
-      action:     'create',
-      resource:   'supplier',
+      action: 'create',
+      resource: 'supplier',
       resourceId: supplier['id'] as string,
     });
     return supplier;
@@ -42,8 +39,8 @@ export class InventoryService {
     const itemId = await this.inventoryRepo.createItem(dto, userId);
     await this.audit.log({
       userId,
-      action:     'create',
-      resource:   'inventory_item',
+      action: 'create',
+      resource: 'inventory_item',
       resourceId: itemId,
     });
     return itemId;
@@ -61,11 +58,7 @@ export class InventoryService {
     return this.inventoryRepo.getExpiringItems(days);
   }
 
-  async adjustStock(
-    itemId: string,
-    dto:    AdjustStockDto,
-    userId: string,
-  ) {
+  async adjustStock(itemId: string, dto: AdjustStockDto, userId: string) {
     const type = dto.quantity > 0 ? 'adjustment' : 'adjustment';
 
     try {
@@ -79,10 +72,10 @@ export class InventoryService {
 
       await this.audit.log({
         userId,
-        action:     'stock_adjust',
-        resource:   'inventory_item',
+        action: 'stock_adjust',
+        resource: 'inventory_item',
         resourceId: itemId,
-        meta:       { quantity: dto.quantity, balance },
+        meta: { quantity: dto.quantity, balance },
       });
 
       return { itemId, balance };
@@ -91,12 +84,7 @@ export class InventoryService {
     }
   }
 
-  async deductForTreatment(
-    itemId:      string,
-    quantity:    number,
-    referenceId: string,
-    userId:      string,
-  ) {
+  async deductForTreatment(itemId: string, quantity: number, referenceId: string, userId: string) {
     try {
       return this.inventoryRepo.adjustStock(
         itemId,
@@ -117,19 +105,15 @@ export class InventoryService {
 
   // ── Purchase Orders ────────────────────────────────────
 
-  async createPurchaseOrder(
-    dto:    CreatePurchaseOrderDto,
-    userId: string,
-  ) {
-    if (!dto.items?.length)
-      throw new BadRequestException('PO must have at least one item');
+  async createPurchaseOrder(dto: CreatePurchaseOrderDto, userId: string) {
+    if (!dto.items?.length) throw new BadRequestException('PO must have at least one item');
 
     const poId = await this.inventoryRepo.createPurchaseOrder(dto, userId);
 
     await this.audit.log({
       userId,
-      action:     'create',
-      resource:   'purchase_order',
+      action: 'create',
+      resource: 'purchase_order',
       resourceId: poId,
     });
 
@@ -146,11 +130,7 @@ export class InventoryService {
     return po;
   }
 
-  async receivePurchaseOrder(
-    id:     string,
-    dto:    ReceivePurchaseOrderDto,
-    userId: string,
-  ) {
+  async receivePurchaseOrder(id: string, dto: ReceivePurchaseOrderDto, userId: string) {
     const po = await this.inventoryRepo.findPurchaseOrderById(id);
     if (!po) throw new NotFoundException(`Purchase order not found: ${id}`);
 
@@ -160,16 +140,14 @@ export class InventoryService {
     if (po['status'] === 'cancelled')
       throw new BadRequestException('Cannot receive a cancelled purchase order');
 
-    const newStatus = await this.inventoryRepo.receivePurchaseOrder(
-      id, dto, userId,
-    );
+    const newStatus = await this.inventoryRepo.receivePurchaseOrder(id, dto, userId);
 
     await this.audit.log({
       userId,
-      action:     'receive',
-      resource:   'purchase_order',
+      action: 'receive',
+      resource: 'purchase_order',
       resourceId: id,
-      meta:       { status: newStatus },
+      meta: { status: newStatus },
     });
 
     return this.inventoryRepo.findPurchaseOrderById(id);

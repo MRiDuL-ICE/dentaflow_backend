@@ -27,10 +27,10 @@ export class InventoryRepository extends BaseRepository {
       [
         dto.name,
         dto.contactName ?? null,
-        dto.email       ?? null,
-        dto.phone       ?? null,
+        dto.email ?? null,
+        dto.phone ?? null,
         JSON.stringify(dto.address ?? {}),
-        dto.notes       ?? null,
+        dto.notes ?? null,
       ],
     );
     return rows[0];
@@ -54,16 +54,16 @@ export class InventoryRepository extends BaseRepository {
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
          RETURNING id`,
         [
-          dto.supplierId   ?? null,
+          dto.supplierId ?? null,
           dto.name,
-          dto.sku          ?? null,
-          dto.category     ?? null,
-          dto.description  ?? null,
-          dto.unit         ?? 'piece',
+          dto.sku ?? null,
+          dto.category ?? null,
+          dto.description ?? null,
+          dto.unit ?? 'piece',
           dto.unitCost,
-          dto.quantity     ?? 0,
+          dto.quantity ?? 0,
           dto.reorderLevel ?? 0,
-          dto.expiryDate   ?? null,
+          dto.expiryDate ?? null,
         ],
       );
 
@@ -86,7 +86,7 @@ export class InventoryRepository extends BaseRepository {
 
   async findItems(search?: string) {
     const conditions = ['is_active = true'];
-    const values:     unknown[] = [];
+    const values: unknown[] = [];
 
     if (search) {
       conditions.push(`(name ILIKE $1 OR sku ILIKE $1 OR category ILIKE $1)`);
@@ -118,10 +118,10 @@ export class InventoryRepository extends BaseRepository {
   }
 
   async adjustStock(
-    itemId:    string,
-    quantity:  number,
-    type:      string,
-    notes:     string | null,
+    itemId: string,
+    quantity: number,
+    type: string,
+    notes: string | null,
     createdBy: string,
     referenceId?: string,
   ) {
@@ -139,9 +139,7 @@ export class InventoryRepository extends BaseRepository {
       const balance = current + quantity;
 
       if (balance < 0)
-        throw new Error(
-          `Insufficient stock: current ${current}, deducting ${Math.abs(quantity)}`,
-        );
+        throw new Error(`Insufficient stock: current ${current}, deducting ${Math.abs(quantity)}`);
 
       await client.query(
         `UPDATE inventory_items
@@ -155,10 +153,7 @@ export class InventoryRepository extends BaseRepository {
            (item_id, type, quantity, balance,
             reference_id, notes, created_by)
          VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-        [
-          itemId, type, quantity, balance,
-          referenceId ?? null, notes, createdBy,
-        ],
+        [itemId, type, quantity, balance, referenceId ?? null, notes, createdBy],
       );
 
       return balance;
@@ -176,15 +171,9 @@ export class InventoryRepository extends BaseRepository {
 
   // ── Purchase Orders ────────────────────────────────────
 
-  async createPurchaseOrder(
-    dto:       CreatePurchaseOrderDto,
-    createdBy: string,
-  ) {
+  async createPurchaseOrder(dto: CreatePurchaseOrderDto, createdBy: string) {
     return this.transaction(async (client) => {
-      const total = dto.items.reduce(
-        (sum, i) => sum + i.quantity * i.unitCost,
-        0,
-      );
+      const total = dto.items.reduce((sum, i) => sum + i.quantity * i.unitCost, 0);
 
       const { rows: poRows } = await client.query<{ id: string }>(
         `INSERT INTO purchase_orders
@@ -201,13 +190,7 @@ export class InventoryRepository extends BaseRepository {
           `INSERT INTO purchase_order_items
              (po_id, item_id, quantity, unit_cost, expiry_date)
            VALUES ($1,$2,$3,$4,$5)`,
-          [
-            poId,
-            item.itemId,
-            item.quantity,
-            item.unitCost,
-            item.expiryDate ?? null,
-          ],
+          [poId, item.itemId, item.quantity, item.unitCost, item.expiryDate ?? null],
         );
       }
 
@@ -250,11 +233,7 @@ export class InventoryRepository extends BaseRepository {
     return { ...po[0], items };
   }
 
-  async receivePurchaseOrder(
-    poId:      string,
-    dto:       ReceivePurchaseOrderDto,
-    createdBy: string,
-  ) {
+  async receivePurchaseOrder(poId: string, dto: ReceivePurchaseOrderDto, createdBy: string) {
     return this.transaction(async (client) => {
       for (const received of dto.items) {
         // Update received qty on PO item
@@ -263,12 +242,7 @@ export class InventoryRepository extends BaseRepository {
            SET received_qty = received_qty + $1,
                expiry_date  = COALESCE($2, expiry_date)
            WHERE po_id = $3 AND item_id = $4`,
-          [
-            received.receivedQty,
-            received.expiryDate ?? null,
-            poId,
-            received.itemId,
-          ],
+          [received.receivedQty, received.expiryDate ?? null, poId, received.itemId],
         );
 
         // Update inventory stock

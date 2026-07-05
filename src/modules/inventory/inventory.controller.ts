@@ -1,12 +1,15 @@
 import {
-  Controller, Get, Post, Patch,
-  Body, Param, Query,
-  UseGuards, ParseUUIDPipe,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
-import {
-  ApiTags, ApiOperation,
-  ApiBearerAuth, ApiSecurity,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { InventoryService } from './inventory.service';
 import {
   CreateSupplierDto,
@@ -32,10 +35,7 @@ export class InventoryController {
   @Post('suppliers')
   @Roles('clinic_owner', 'receptionist')
   @ApiOperation({ summary: 'Create supplier' })
-  createSupplier(
-    @Body() dto: CreateSupplierDto,
-    @CurrentUser() user: AuthUser,
-  ) {
+  createSupplier(@Body() dto: CreateSupplierDto, @CurrentUser() user: AuthUser) {
     return this.inventoryService.createSupplier(dto, user.id);
   }
 
@@ -51,10 +51,7 @@ export class InventoryController {
   @Post('items')
   @Roles('clinic_owner', 'receptionist')
   @ApiOperation({ summary: 'Add inventory item' })
-  createItem(
-    @Body() dto: CreateInventoryItemDto,
-    @CurrentUser() user: AuthUser,
-  ) {
+  createItem(@Body() dto: CreateInventoryItemDto, @CurrentUser() user: AuthUser) {
     return this.inventoryService.createItem(dto, user.id);
   }
 
@@ -102,10 +99,7 @@ export class InventoryController {
   @Post('purchase-orders')
   @Roles('clinic_owner', 'receptionist')
   @ApiOperation({ summary: 'Create purchase order' })
-  createPO(
-    @Body() dto: CreatePurchaseOrderDto,
-    @CurrentUser() user: AuthUser,
-  ) {
+  createPO(@Body() dto: CreatePurchaseOrderDto, @CurrentUser() user: AuthUser) {
     return this.inventoryService.createPurchaseOrder(dto, user.id);
   }
 

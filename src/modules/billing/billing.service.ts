@@ -1,7 +1,4 @@
-import {
-  Injectable, NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { BillingRepository } from './billing.repository';
 import { CreateInvoiceDto, CreatePaymentDto } from './dto/billing.dto';
 import { AuditService } from '@common/audit/audit.service';
@@ -10,19 +7,18 @@ import { AuditService } from '@common/audit/audit.service';
 export class BillingService {
   constructor(
     private readonly billingRepo: BillingRepository,
-    private readonly audit:       AuditService,
+    private readonly audit: AuditService,
   ) {}
 
   async createInvoice(dto: CreateInvoiceDto, userId: string) {
-    if (!dto.items?.length)
-      throw new BadRequestException('Invoice must have at least one item');
+    if (!dto.items?.length) throw new BadRequestException('Invoice must have at least one item');
 
     const invoiceId = await this.billingRepo.createInvoice(dto, userId);
 
     await this.audit.log({
       userId,
-      action:     'create',
-      resource:   'invoice',
+      action: 'create',
+      resource: 'invoice',
       resourceId: invoiceId,
     });
 
@@ -39,14 +35,9 @@ export class BillingService {
     return this.billingRepo.findInvoicesByPatient(patientId);
   }
 
-  async addPayment(
-    invoiceId: string,
-    dto:       CreatePaymentDto,
-    userId:    string,
-  ) {
+  async addPayment(invoiceId: string, dto: CreatePaymentDto, userId: string) {
     const invoice = await this.billingRepo.findInvoiceById(invoiceId);
-    if (!invoice)
-      throw new NotFoundException(`Invoice not found: ${invoiceId}`);
+    if (!invoice) throw new NotFoundException(`Invoice not found: ${invoiceId}`);
 
     if (invoice['status'] === 'paid')
       throw new BadRequestException('Invoice is already fully paid');
@@ -55,16 +46,14 @@ export class BillingService {
       throw new BadRequestException('Cannot pay a cancelled invoice');
 
     try {
-      await this.billingRepo.addPayment(
-        invoiceId, dto, userId,
-      );
+      await this.billingRepo.addPayment(invoiceId, dto, userId);
 
       await this.audit.log({
         userId,
-        action:     'payment',
-        resource:   'invoice',
+        action: 'payment',
+        resource: 'invoice',
         resourceId: invoiceId,
-        meta:       { amount: dto.amount, method: dto.method },
+        meta: { amount: dto.amount, method: dto.method },
       });
 
       return this.billingRepo.findInvoiceById(invoiceId);
@@ -83,10 +72,10 @@ export class BillingService {
 
     await this.audit.log({
       userId,
-      action:     'status_change',
-      resource:   'invoice',
+      action: 'status_change',
+      resource: 'invoice',
       resourceId: id,
-      meta:       { status },
+      meta: { status },
     });
 
     return invoice;

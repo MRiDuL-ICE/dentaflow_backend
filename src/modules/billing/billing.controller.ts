@@ -1,12 +1,16 @@
 import {
-  Controller, Get, Post, Patch,
-  Body, Param, UseGuards,
-  ParseUUIDPipe, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+  ParseUUIDPipe,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import {
-  ApiTags, ApiOperation,
-  ApiBearerAuth, ApiSecurity,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { BillingService } from './billing.service';
 import { CreateInvoiceDto, CreatePaymentDto } from './dto/billing.dto';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
@@ -24,10 +28,7 @@ export class BillingController {
   @Post('invoices')
   @Roles('clinic_owner', 'receptionist')
   @ApiOperation({ summary: 'Create invoice' })
-  createInvoice(
-    @Body() dto: CreateInvoiceDto,
-    @CurrentUser() user: AuthUser,
-  ) {
+  createInvoice(@Body() dto: CreateInvoiceDto, @CurrentUser() user: AuthUser) {
     return this.billingService.createInvoice(dto, user.id);
   }
 
@@ -41,9 +42,7 @@ export class BillingController {
   @Get('invoices/patient/:patientId')
   @Roles('clinic_owner', 'dentist', 'receptionist')
   @ApiOperation({ summary: 'Get all invoices for a patient' })
-  getPatientInvoices(
-    @Param('patientId', ParseUUIDPipe) patientId: string,
-  ) {
+  getPatientInvoices(@Param('patientId', ParseUUIDPipe) patientId: string) {
     return this.billingService.getPatientInvoices(patientId);
   }
 
