@@ -1,12 +1,16 @@
 import {
-  Controller, Get, Post, Delete,
-  Body, Param, UseGuards,
-  ParseUUIDPipe, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  ParseUUIDPipe,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import {
-  ApiTags, ApiOperation,
-  ApiBearerAuth, ApiSecurity,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { AiChatService } from './ai-chat.service';
 import { StartChatSessionDto, SendMessageDto } from './dto/chat.dto';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
@@ -22,10 +26,7 @@ export class AiChatController {
 
   @Post('sessions')
   @ApiOperation({ summary: 'Start a new AI chat session' })
-  startSession(
-    @Body() dto: StartChatSessionDto,
-    @CurrentUser() user: AuthUser,
-  ) {
+  startSession(@Body() dto: StartChatSessionDto, @CurrentUser() user: AuthUser) {
     return this.aiChatService.startSession(dto, user.id);
   }
 
@@ -48,20 +49,14 @@ export class AiChatController {
 
   @Get('sessions/:id/history')
   @ApiOperation({ summary: 'Get session message history' })
-  getHistory(
-    @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: AuthUser,
-  ) {
+  getHistory(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
     return this.aiChatService.getSessionHistory(id, user.id);
   }
 
   @Delete('sessions/:id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Close chat session' })
-  closeSession(
-    @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: AuthUser,
-  ) {
+  closeSession(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
     return this.aiChatService.closeSession(id, user.id);
   }
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { BaseRepository } from '@common/repository/base.repository';
 import { TenantClsStore } from '@common/tenant/tenant-cls.interface';
-import {GroqMessage} from '@common/ai/groq.interface';
+import { GroqMessage } from '@common/ai/groq.interface';
 
 @Injectable()
 export class AiChatRepository extends BaseRepository {
@@ -10,11 +10,7 @@ export class AiChatRepository extends BaseRepository {
     super(cls);
   }
 
-  async createSession(data: {
-    patientId?: string;
-    userId:     string;
-    context:    string;
-  }) {
+  async createSession(data: { patientId?: string; userId: string; context: string }) {
     const rows = await this.execute<Record<string, unknown>>(
       `INSERT INTO ai_chat_sessions
          (patient_id, user_id, context)
@@ -33,12 +29,7 @@ export class AiChatRepository extends BaseRepository {
     return rows[0] ?? null;
   }
 
-  async saveMessage(data: {
-    sessionId: string;
-    role:      string;
-    content:   string;
-    tokens?:   number;
-  }) {
+  async saveMessage(data: { sessionId: string; role: string; content: string; tokens?: number }) {
     const rows = await this.execute<Record<string, unknown>>(
       `INSERT INTO ai_chat_messages
          (session_id, role, content, tokens)
@@ -51,7 +42,7 @@ export class AiChatRepository extends BaseRepository {
 
   async getSessionMessages(sessionId: string): Promise<GroqMessage[]> {
     const rows = await this.query<{
-      role:    string;
+      role: string;
       content: string;
     }>(
       `SELECT role, content
@@ -61,13 +52,13 @@ export class AiChatRepository extends BaseRepository {
       [sessionId],
     );
 
-    return rows.map(r => ({
-      role:    r.role as 'user' | 'assistant' | 'system',
+    return rows.map((r) => ({
+      role: r.role as 'user' | 'assistant' | 'system',
       content: r.content,
     }));
   }
 
-  async getUserSessions(userId: string){
+  async getUserSessions(userId: string) {
     return this.query(
       `SELECT s.*,
               COUNT(m.id)::int AS message_count,
