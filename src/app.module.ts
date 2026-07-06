@@ -23,6 +23,15 @@ import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { TreatmentModule } from '@modules/treatment/treatment.module';
 import { BillingModule } from '@modules/billing/billing.module';
 import { InventoryModule } from '@modules/inventory/inventory.module';
+import { AiModule }               from '@common/ai/ai.module';
+import { CacheModule }            from '@common/cache/cache.module';
+import { RabbitMQModule }         from '@common/rabbitmq/rabbitmq.module';
+import { QueueModule }            from '@common/queue/queue.module';
+import { AiChatModule }           from '@modules/ai-chat/ai-chat.module';
+import { ClinicalNotesModule }    from '@modules/clinical-notes/clinical-notes.module';
+import { AiRecommendationsModule } from '@modules/ai-recommendations/ai-recommendations.module';
+import { XrayModule }             from '@modules/xray/xray.module';
+
 
 @Module({
   imports: [
@@ -53,6 +62,14 @@ import { InventoryModule } from '@modules/inventory/inventory.module';
     TreatmentModule,
     BillingModule,
     InventoryModule,
+    AiModule,
+    CacheModule,
+    RabbitMQModule,
+    QueueModule,
+    AiChatModule,
+    ClinicalNotesModule,
+    AiRecommendationsModule,
+    XrayModule,
   ],
   providers: [
     TenantService,

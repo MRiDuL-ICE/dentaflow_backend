@@ -4,12 +4,14 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { PatientQueryDto } from './dto/patient-query.dto';
 import { AuditService } from '@common/audit/audit.service';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { CacheService } from '@common/cache/cache.service';
 
 @Injectable()
 export class PatientService {
   constructor(
     private readonly patientRepo: PatientRepository,
     private readonly audit: AuditService,
+    private readonly cache: CacheService,
   ) {}
 
   async create(dto: CreatePatientDto, userId: string) {
@@ -53,8 +55,14 @@ export class PatientService {
   }
 
   async findOne(id: string) {
+    const cacheKey = this.cache.patientKey(id);
+    const cached = await this.cache.get(cacheKey);
+    if (cached) return cached;
+
     const patient = await this.patientRepo.get360(id);
     if (!patient['id']) throw new NotFoundException(`Patient not found: ${id}`);
+
+    await this.cache.set(cacheKey, patient, this.cache.TTL.PATIENT);
     return patient;
   }
 
@@ -71,6 +79,7 @@ export class PatientService {
       resourceId: id,
     });
 
+    await this.cache.del(this.cache.patientKey(id));
     return updated;
   }
 
@@ -86,6 +95,7 @@ export class PatientService {
       meta: { soft: true },
     });
 
+    await this.cache.del(this.cache.patientKey(id));
     return { message: `Patient ${id} deleted` };
   }
 }

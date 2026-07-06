@@ -63,4 +63,79 @@ export class EmailService {
       this.logger.error(`Failed to send welcome email to ${email}:`, error);
     }
   }
+
+  async sendAppointmentReminder(
+    email: string,
+    patientName: string,
+    scheduledAt: string,
+    clinicName: string,
+  ): Promise<void> {
+    const date = new Date(scheduledAt).toLocaleString('en-US', {
+      dateStyle: 'full',
+      timeStyle: 'short',
+    });
+
+    const { error } = await this.resend.emails.send({
+      from: this.from,
+      to: email,
+      subject: `Appointment Reminder — ${clinicName}`,
+      html: `
+      <h2>Appointment Reminder</h2>
+      <p>Dear ${patientName},</p>
+      <p>This is a reminder for your upcoming appointment at <strong>${clinicName}</strong>.</p>
+      <p><strong>Date & Time:</strong> ${date}</p>
+      <p>Please arrive 10 minutes early. If you need to reschedule, contact us as soon as possible.</p>
+    `,
+    });
+
+    if (error) this.logger.error('Reminder email failed:', error);
+  }
+
+  async sendLowStockAlert(
+    email: string,
+    itemName: string,
+    quantity: number,
+    reorderLevel: number,
+  ): Promise<void> {
+    const { error } = await this.resend.emails.send({
+      from: this.from,
+      to: email,
+      subject: `Low Stock Alert — ${itemName}`,
+      html: `
+      <h2>Low Stock Alert</h2>
+      <p>The following inventory item is running low:</p>
+      <table>
+        <tr><td><strong>Item:</strong></td><td>${itemName}</td></tr>
+        <tr><td><strong>Current Stock:</strong></td><td>${quantity}</td></tr>
+        <tr><td><strong>Reorder Level:</strong></td><td>${reorderLevel}</td></tr>
+      </table>
+      <p>Please create a purchase order to restock.</p>
+    `,
+    });
+
+    if (error) this.logger.error('Low stock alert failed:', error);
+  }
+
+  async sendOverdueInvoiceAlert(
+    email: string,
+    patientName: string,
+    invoiceNumber: string,
+    balance: number,
+    dueDate: string,
+  ): Promise<void> {
+    const { error } = await this.resend.emails.send({
+      from: this.from,
+      to: email,
+      subject: `Invoice ${invoiceNumber} — Payment Overdue`,
+      html: `
+      <h2>Payment Reminder</h2>
+      <p>Dear ${patientName},</p>
+      <p>Invoice <strong>${invoiceNumber}</strong> has an outstanding balance of
+         <strong>$${balance.toFixed(2)}</strong> that was due on ${dueDate}.</p>
+      <p>Please contact us to arrange payment.</p>
+    `,
+    });
+
+    if (error) this.logger.error('Overdue invoice alert failed:', error);
+  }
 }

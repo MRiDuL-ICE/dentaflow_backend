@@ -6,12 +6,14 @@ import {
   CreatePlanItemDto,
 } from './dto/create-treatment.dto';
 import { AuditService } from '@common/audit/audit.service';
+import { CacheService } from '@common/cache/cache.service';
 
 @Injectable()
 export class TreatmentService {
   constructor(
     private readonly treatmentRepo: TreatmentRepository,
     private readonly audit: AuditService,
+    private readonly cache: CacheService,
   ) {}
 
   // ── Catalog ────────────────────────────────────────────
@@ -31,7 +33,16 @@ export class TreatmentService {
     return treatment;
   }
 
-  findTreatments(search?: string) {
+  async findTreatments(search?: string) {
+    if (!search) {
+      const cacheKey = this.cache.catalogKey('treatments');
+      const cached = await this.cache.get(cacheKey);
+      if (cached) return cached;
+
+      const treatments = await this.treatmentRepo.findTreatments();
+      await this.cache.set(cacheKey, treatments, this.cache.TTL.CATALOG);
+      return treatments;
+    }
     return this.treatmentRepo.findTreatments(search);
   }
 

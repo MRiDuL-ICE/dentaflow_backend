@@ -44,6 +44,7 @@ function createPool(connectionString: string): Pool {
         new Redis({
           host: c.get<string>('redis.host'),
           port: c.get<number>('redis.port'),
+          maxRetriesPerRequest: null,
         }),
       inject: [ConfigService],
     },

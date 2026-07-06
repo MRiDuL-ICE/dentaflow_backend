@@ -8,12 +8,15 @@ import {
   ReceivePurchaseOrderDto,
 } from './dto/inventory.dto';
 import { AuditService } from '@common/audit/audit.service';
+import { JobSchedulerService } from '@common/queue/job-scheduler.service';
 
 @Injectable()
 export class InventoryService {
   constructor(
     private readonly inventoryRepo: InventoryRepository,
     private readonly audit: AuditService,
+    private readonly jobScheduler: JobSchedulerService,
+
   ) {}
 
   // ── Suppliers ──────────────────────────────────────────
@@ -77,6 +80,20 @@ export class InventoryService {
         resourceId: itemId,
         meta: { quantity: dto.quantity, balance },
       });
+
+      // Check if low stock after adjustment
+      const items = await this.inventoryRepo.findItems();
+      const item = items.find((i) => i['id'] === itemId);
+
+      if (item && Number(item['quantity']) <= Number(item['reorder_level'])) {
+        await this.jobScheduler.scheduleLowStockAlert({
+          itemName: item['name'] as string,
+          quantity: Number(item['quantity']),
+          reorderLevel: Number(item['reorder_level']),
+          clinicSlug: 'clinic',
+          adminEmail: 'admin@clinic.com',
+        });
+      }
 
       return { itemId, balance };
     } catch (err) {

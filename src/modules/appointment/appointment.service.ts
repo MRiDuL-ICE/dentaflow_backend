@@ -9,12 +9,17 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentStatusDto, AppointmentStatus } from './dto/update-appointment.dto';
 import { AppointmentQueryDto } from './dto/appointment-query.dto';
 import { AuditService } from '@common/audit/audit.service';
+import { RabbitMQService } from '@common/rabbitmq/rabbitmq.service';
+import { JobSchedulerService } from '@common/queue/job-scheduler.service';
+import { ROUTING_KEYS } from '@common/rabbitmq/rabbitmq.interface';
 
 @Injectable()
 export class AppointmentService {
   constructor(
     private readonly appointmentRepo: AppointmentRepository,
     private readonly audit: AuditService,
+    private readonly rabbitMQ: RabbitMQService,
+    private readonly jobScheduler: JobSchedulerService,
   ) {}
 
   async create(dto: CreateAppointmentDto, userId: string) {
@@ -79,6 +84,37 @@ export class AppointmentService {
       resourceId: id,
       meta: { from: current, to: dto.status },
     });
+
+    // Publish event
+    await this.rabbitMQ.publish(ROUTING_KEYS.APPOINTMENT_CONFIRMED, {
+      type: 'appointment.status_changed',
+      payload: {
+        appointmentId: id,
+        status: dto.status,
+        userId,
+      },
+    });
+
+    // Schedule reminder if confirmed
+    if (dto.status === AppointmentStatus.CONFIRMED) {
+      const appt = await this.appointmentRepo.findById(id);
+      const scheduledAt = new Date(appt!['scheduled_at'] as string);
+      const delay = scheduledAt.getTime() - Date.now() - 24 * 60 * 60 * 1000;
+
+      if (delay > 0) {
+        await this.jobScheduler.scheduleAppointmentReminder(
+          {
+            appointmentId: id,
+            patientEmail: 'patient@example.com', // fetch from patient record
+            patientName: 'Patient',
+            scheduledAt: scheduledAt.toISOString(),
+            clinicName: 'DentaFlow Clinic',
+            clinicSlug: 'clinic',
+          },
+          delay,
+        );
+      }
+    }
 
     return updated;
   }
