@@ -12,6 +12,8 @@ import { AuditService } from '@common/audit/audit.service';
 import { RabbitMQService } from '@common/rabbitmq/rabbitmq.service';
 import { JobSchedulerService } from '@common/queue/job-scheduler.service';
 import { ROUTING_KEYS } from '@common/rabbitmq/rabbitmq.interface';
+import { TenantClsStore } from '@common/tenant/tenant-cls.interface';
+import { ClsService } from 'nestjs-cls';
 
 @Injectable()
 export class AppointmentService {
@@ -20,6 +22,7 @@ export class AppointmentService {
     private readonly audit: AuditService,
     private readonly rabbitMQ: RabbitMQService,
     private readonly jobScheduler: JobSchedulerService,
+    private readonly cls: ClsService<TenantClsStore>,
   ) {}
 
   async create(dto: CreateAppointmentDto, userId: string) {
@@ -71,11 +74,37 @@ export class AppointmentService {
     if (!existing) throw new NotFoundException(`Appointment not found: ${id}`);
 
     const current = existing['status'] as string;
-
-    // Validate status transitions
     this.validateTransition(current, dto.status);
 
     const updated = await this.appointmentRepo.updateStatus(id, dto, userId, current);
+
+    await this.rabbitMQ.publish(ROUTING_KEYS.APPOINTMENT_CONFIRMED, {
+      type: 'appointment.status_changed',
+      payload: { appointmentId: id, status: dto.status, userId },
+    });
+
+    // Schedule reminder when confirmed
+    if (dto.status === AppointmentStatus.CONFIRMED) {
+      const appt = await this.appointmentRepo.findAppointmentWithPatient(id);
+      const clinicId = this.cls.get('clinicId');
+      const clinic = await this.appointmentRepo.getClinicInfo(clinicId);
+      const scheduled = new Date(appt!['scheduled_at'] as string);
+      const delay = scheduled.getTime() - Date.now() - 24 * 60 * 60 * 1000;
+
+      if (delay > 0 && appt?.['patient_email']) {
+        await this.jobScheduler.scheduleAppointmentReminder(
+          {
+            appointmentId: id,
+            patientEmail: appt['patient_email'] as string,
+            patientName: `${appt['patient_first_name'] as string} ${appt['patient_last_name'] as string}`,
+            scheduledAt: scheduled.toISOString(),
+            clinicName: (clinic?.['name'] as string) ?? '',
+            clinicSlug: (clinic?.['slug'] as string) ?? '',
+          },
+          delay,
+        );
+      }
+    }
 
     await this.audit.log({
       userId,
@@ -85,40 +114,8 @@ export class AppointmentService {
       meta: { from: current, to: dto.status },
     });
 
-    // Publish event
-    await this.rabbitMQ.publish(ROUTING_KEYS.APPOINTMENT_CONFIRMED, {
-      type: 'appointment.status_changed',
-      payload: {
-        appointmentId: id,
-        status: dto.status,
-        userId,
-      },
-    });
-
-    // Schedule reminder if confirmed
-    if (dto.status === AppointmentStatus.CONFIRMED) {
-      const appt = await this.appointmentRepo.findById(id);
-      const scheduledAt = new Date(appt!['scheduled_at'] as string);
-      const delay = scheduledAt.getTime() - Date.now() - 24 * 60 * 60 * 1000;
-
-      if (delay > 0) {
-        await this.jobScheduler.scheduleAppointmentReminder(
-          {
-            appointmentId: id,
-            patientEmail: 'patient@example.com', // fetch from patient record
-            patientName: 'Patient',
-            scheduledAt: scheduledAt.toISOString(),
-            clinicName: 'DentaFlow Clinic',
-            clinicSlug: 'clinic',
-          },
-          delay,
-        );
-      }
-    }
-
     return updated;
   }
-
   async getChairs() {
     return this.appointmentRepo.getChairs();
   }

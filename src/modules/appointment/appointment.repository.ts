@@ -1,15 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { BaseRepository } from '@common/repository/base.repository';
 import { TenantClsStore } from '@common/tenant/tenant-cls.interface';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dto/update-appointment.dto';
 import { AppointmentQueryDto } from './dto/appointment-query.dto';
+import { Pool } from 'pg';
+import { READ_POOL, WRITE_POOL } from '@database/database.module';
 
 @Injectable()
 export class AppointmentRepository extends BaseRepository {
-  constructor(cls: ClsService<TenantClsStore>) {
-    super(cls);
+  constructor(
+    cls: ClsService<TenantClsStore>,
+    @Inject(WRITE_POOL) writePool: Pool,
+    @Inject(READ_POOL) readPool: Pool,
+  ) {
+    super(cls, writePool, readPool);
   }
 
   async create(dto: CreateAppointmentDto, createdBy: string) {
@@ -162,5 +168,29 @@ export class AppointmentRepository extends BaseRepository {
         : [scheduledAt, durationMinutes, dentistId],
     );
     return parseInt(rows[0].count, 10) > 0;
+  }
+
+  async findAppointmentWithPatient(id: string) {
+    const rows = await this.query<Record<string, unknown>>(
+      `SELECT
+       a.*,
+       p.email      AS patient_email,
+       p.first_name AS patient_first_name,
+       p.last_name  AS patient_last_name
+     FROM appointments a
+     JOIN patients p ON p.id = a.patient_id
+     WHERE a.id = $1`,
+      [id],
+    );
+    return rows[0] ?? null;
+  }
+
+  async getClinicInfo(clinicId: string) {
+    // public schema — no search_path
+    const { rows } = await this.writePool.query<Record<string, unknown>>(
+      `SELECT name, slug FROM public.clinics WHERE id = $1`,
+      [clinicId],
+    );
+    return rows[0] ?? null;
   }
 }

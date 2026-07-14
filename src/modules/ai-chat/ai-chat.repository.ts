@@ -1,13 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { BaseRepository } from '@common/repository/base.repository';
 import { TenantClsStore } from '@common/tenant/tenant-cls.interface';
 import { GroqMessage } from '@common/ai/groq.interface';
+import { Pool } from 'pg';
+import { READ_POOL, WRITE_POOL } from '@database/database.module';
 
 @Injectable()
 export class AiChatRepository extends BaseRepository {
-  constructor(cls: ClsService<TenantClsStore>) {
-    super(cls);
+  constructor(
+    cls: ClsService<TenantClsStore>,
+    @Inject(WRITE_POOL) writePool: Pool,
+    @Inject(READ_POOL) readPool: Pool,
+  ) {
+    super(cls, writePool, readPool);
   }
 
   async createSession(data: { patientId?: string; userId: string; context: string }) {

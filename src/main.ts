@@ -8,14 +8,22 @@ import { REDIS_CLIENT } from './database/database.module';
 import Redis from 'ioredis';
 import fastifyRateLimit from '@fastify/rate-limit';
 import { GlobalExceptionFilter } from '@common/filters/global-exception.filter';
+import { TransformInterceptor } from '@common/interceptors/transform.interceptor';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({ logger: false }),
+    { bufferLogs: true },
   );
 
+  // Use Winston as NestJS logger
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+
   app.useGlobalFilters(new GlobalExceptionFilter());
+
+  app.useGlobalInterceptors(new TransformInterceptor());
 
   // ── Fastify plugins ───────────────────────────────────
   await app.register(await import('@fastify/helmet'));
@@ -76,9 +84,12 @@ async function bootstrap(): Promise<void> {
   const port = process.env.PORT ?? 3000;
   await app.listen(port, '0.0.0.0');
 
-  console.log(`🚀 API:      http://localhost:${port}/api`);
-  console.log(`📋 Swagger:  http://localhost:${port}/api/docs`);
-  console.log(`🐇 RabbitMQ: http://localhost:15672`);
+  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
+  logger.log(`🚀 API running on http://localhost:${port}/api`, 'Bootstrap');
+
+  if (process.env.NODE_ENV !== 'production') {
+    logger.log(`📋 Swagger: http://localhost:${port}/api/docs`, 'Bootstrap');
+  }
 }
 
 void bootstrap();

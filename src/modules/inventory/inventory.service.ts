@@ -9,6 +9,8 @@ import {
 } from './dto/inventory.dto';
 import { AuditService } from '@common/audit/audit.service';
 import { JobSchedulerService } from '@common/queue/job-scheduler.service';
+import { TenantClsStore } from '@common/tenant/tenant-cls.interface';
+import { ClsService } from 'nestjs-cls';
 
 @Injectable()
 export class InventoryService {
@@ -16,7 +18,7 @@ export class InventoryService {
     private readonly inventoryRepo: InventoryRepository,
     private readonly audit: AuditService,
     private readonly jobScheduler: JobSchedulerService,
-
+    private readonly cls: ClsService<TenantClsStore>,
   ) {}
 
   // ── Suppliers ──────────────────────────────────────────
@@ -62,7 +64,7 @@ export class InventoryService {
   }
 
   async adjustStock(itemId: string, dto: AdjustStockDto, userId: string) {
-    const type = dto.quantity > 0 ? 'adjustment' : 'adjustment';
+    const type = 'adjustment';
 
     try {
       const balance = await this.inventoryRepo.adjustStock(
@@ -81,18 +83,24 @@ export class InventoryService {
         meta: { quantity: dto.quantity, balance },
       });
 
-      // Check if low stock after adjustment
+      // Check low stock after adjustment
       const items = await this.inventoryRepo.findItems();
       const item = items.find((i) => i['id'] === itemId);
 
       if (item && Number(item['quantity']) <= Number(item['reorder_level'])) {
-        await this.jobScheduler.scheduleLowStockAlert({
-          itemName: item['name'] as string,
-          quantity: Number(item['quantity']),
-          reorderLevel: Number(item['reorder_level']),
-          clinicSlug: 'clinic',
-          adminEmail: 'admin@clinic.com',
-        });
+        const clinicId = this.cls.get('clinicId');
+        const adminEmail = await this.inventoryRepo.getClinicOwnerEmail(clinicId);
+        const clinic = await this.inventoryRepo.getClinicInfo(clinicId);
+
+        if (adminEmail) {
+          await this.jobScheduler.scheduleLowStockAlert({
+            itemName: item['name'] as string,
+            quantity: Number(item['quantity']),
+            reorderLevel: Number(item['reorder_level']),
+            clinicSlug: (clinic?.['slug'] as string) ?? '',
+            adminEmail,
+          });
+        }
       }
 
       return { itemId, balance };

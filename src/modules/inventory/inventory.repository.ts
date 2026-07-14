@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { BaseRepository } from '@common/repository/base.repository';
 import { TenantClsStore } from '@common/tenant/tenant-cls.interface';
@@ -9,11 +9,17 @@ import {
   ReceivePurchaseOrderDto,
 } from './dto/inventory.dto';
 import { PurchaseOrderRow } from './types/inventory.types';
+import { Pool } from 'pg';
+import { READ_POOL, WRITE_POOL } from '@database/database.module';
 
 @Injectable()
 export class InventoryRepository extends BaseRepository {
-  constructor(cls: ClsService<TenantClsStore>) {
-    super(cls);
+  constructor(
+    cls: ClsService<TenantClsStore>,
+    @Inject(WRITE_POOL) writePool: Pool,
+    @Inject(READ_POOL) readPool: Pool,
+  ) {
+    super(cls, writePool, readPool);
   }
 
   // ── Suppliers ──────────────────────────────────────────
@@ -307,5 +313,27 @@ export class InventoryRepository extends BaseRepository {
        ORDER BY ii.expiry_date ASC`,
       [days],
     );
+  }
+
+  async getClinicOwnerEmail(clinicId: string): Promise<string | null> {
+    const { rows } = await this.writePool.query<{ email: string }>(
+      `SELECT u.email
+     FROM public.users u
+     JOIN public.clinic_members cm ON cm.user_id = u.id
+     WHERE cm.clinic_id = $1
+       AND cm.role_id   = 2         -- clinic_owner
+       AND cm.is_active = true
+     LIMIT 1`,
+      [clinicId],
+    );
+    return rows[0]?.email ?? null;
+  }
+
+  async getClinicInfo(clinicId: string) {
+    const { rows } = await this.writePool.query<Record<string, unknown>>(
+      `SELECT name, slug FROM public.clinics WHERE id = $1`,
+      [clinicId],
+    );
+    return rows[0] ?? null;
   }
 }

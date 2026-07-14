@@ -1,16 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { GroqService } from '@common/ai/groq.service';
 import { ClsService } from 'nestjs-cls';
 import { TenantClsStore } from '@common/tenant/tenant-cls.interface';
 import { BaseRepository } from '@common/repository/base.repository';
+import { READ_POOL, WRITE_POOL } from '@database/database.module';
+import { Pool } from 'pg';
 
 @Injectable()
 export class AiRecommendationsService extends BaseRepository {
   constructor(
-    private readonly groq: GroqService,
     cls: ClsService<TenantClsStore>,
+    @Inject(WRITE_POOL) writePool: Pool,
+    @Inject(READ_POOL) readPool: Pool,
+    private readonly groq: GroqService,
   ) {
-    super(cls);
+    super(cls, writePool, readPool);
   }
 
   async getRecommendations(patientId: string, userId: string) {

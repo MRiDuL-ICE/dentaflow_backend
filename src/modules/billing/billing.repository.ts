@@ -1,15 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PoolClient } from 'pg';
 import { ClsService } from 'nestjs-cls';
 import { BaseRepository } from '@common/repository/base.repository';
 import { TenantClsStore } from '@common/tenant/tenant-cls.interface';
 import { CreateInvoiceDto, CreatePaymentDto } from './dto/billing.dto';
 import { InvoiceRow } from './types/billing.types';
+import { Pool } from 'pg';
+import { READ_POOL, WRITE_POOL } from '@database/database.module';
 
 @Injectable()
 export class BillingRepository extends BaseRepository {
-  constructor(cls: ClsService<TenantClsStore>) {
-    super(cls);
+  constructor(
+    cls: ClsService<TenantClsStore>,
+    @Inject(WRITE_POOL) writePool: Pool,
+    @Inject(READ_POOL) readPool: Pool,
+  ) {
+    super(cls, writePool, readPool);
   }
 
   async generateInvoiceNumber(client: PoolClient): Promise<string> {

@@ -5,10 +5,11 @@ import { WRITE_POOL, READ_POOL } from '@database/database.module';
 import { TenantClsStore } from '@common/tenant/tenant-cls.interface';
 
 export abstract class BaseRepository {
-  @Inject(WRITE_POOL) private readonly writePool!: Pool;
-  @Inject(READ_POOL) private readonly readPool!: Pool;
-
-  constructor(protected readonly cls: ClsService<TenantClsStore>) {}
+  constructor(
+    protected readonly cls: ClsService<TenantClsStore>,
+    @Inject(WRITE_POOL) protected readonly writePool: Pool,
+    @Inject(READ_POOL) protected readonly readPool: Pool,
+  ) {}
 
   private get schema(): string {
     const schema = this.cls.get('schemaName');

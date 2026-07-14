@@ -1,9 +1,36 @@
 {
-  "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
-  "testEnvironment": "node",
-  "testRegex": ".e2e-spec.ts$",
-  "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "tsconfig": {
+          "module": "commonjs"
+        }
+      }
+    },
+    "moduleFileExtensions": ["js", "json", "ts"],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s",
+      "!**/*.module.ts",
+      "!**/main.ts",
+      "!**/*.dto.ts",
+      "!**/*.interface.ts",
+      "!**/*.type.ts",
+      "!**/*.constant.ts"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@common/(.*)$": "<rootDir>/common/$1",
+      "^@config/(.*)$": "<rootDir>/config/$1",
+      "^@database/(.*)$": "<rootDir>/database/$1",
+      "^@modules/(.*)$": "<rootDir>/modules/$1",
+      "^test/(.*)$": "<rootDir>/../test/$1"
+    },
+    "transformIgnorePatterns": ["node_modules/(?!(@faker-js/faker|uuid)/)"]
   }
 }

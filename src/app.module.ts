@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ClsModule } from 'nestjs-cls';
@@ -23,22 +23,33 @@ import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { TreatmentModule } from '@modules/treatment/treatment.module';
 import { BillingModule } from '@modules/billing/billing.module';
 import { InventoryModule } from '@modules/inventory/inventory.module';
-import { AiModule }               from '@common/ai/ai.module';
-import { CacheModule }            from '@common/cache/cache.module';
-import { RabbitMQModule }         from '@common/rabbitmq/rabbitmq.module';
-import { QueueModule }            from '@common/queue/queue.module';
-import { AiChatModule }           from '@modules/ai-chat/ai-chat.module';
-import { ClinicalNotesModule }    from '@modules/clinical-notes/clinical-notes.module';
+import { AiModule } from '@common/ai/ai.module';
+import { CacheModule } from '@common/cache/cache.module';
+import { RabbitMQModule } from '@common/rabbitmq/rabbitmq.module';
+import { QueueModule } from '@common/queue/queue.module';
+import { AiChatModule } from '@modules/ai-chat/ai-chat.module';
+import { ClinicalNotesModule } from '@modules/clinical-notes/clinical-notes.module';
 import { AiRecommendationsModule } from '@modules/ai-recommendations/ai-recommendations.module';
-import { XrayModule }             from '@modules/xray/xray.module';
-
+import { XrayModule } from '@modules/xray/xray.module';
+import { PortalModule } from '@modules/portal/portal.module';
+import { AnalyticsModule } from '@modules/analytics/analytics.module';
+import { ReportsModule } from '@modules/reports/reports.module';
+import { HttpLoggerMiddleware } from '@common/logger/http-logger.middleware';
+import { envValidationSchema } from '@config/env.validation';
+import { LoggerModule } from '@common/logger/logger.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig, databaseConfig, redisConfig, jwtConfig],
+        validationSchema: envValidationSchema,
+        validationOptions: {
+    allowUnknown: true,
+    abortEarly:   false,
+  },
     }),
+    LoggerModule,
 
     // nestjs-cls — global, auto-applies to all Fastify routes
     ClsModule.forRoot({
@@ -70,6 +81,9 @@ import { XrayModule }             from '@modules/xray/xray.module';
     ClinicalNotesModule,
     AiRecommendationsModule,
     XrayModule,
+    PortalModule,
+    AnalyticsModule,
+    ReportsModule,
   ],
   providers: [
     TenantService,
@@ -85,6 +99,17 @@ import { XrayModule }             from '@modules/xray/xray.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(TenantMiddleware).forRoutes('*');
+    consumer
+      .apply(HttpLoggerMiddleware)
+      .forRoutes('*');
+    consumer
+      .apply(TenantMiddleware)
+      .exclude(
+        { path: 'health',                 method: RequestMethod.GET },
+        { path: 'super-admin/login',      method: RequestMethod.POST },
+        { path: 'clinics/register',       method: RequestMethod.POST },
+        { path: 'auth/magic-link/verify', method: RequestMethod.GET },
+      )
+      .forRoutes('*');
   }
 }

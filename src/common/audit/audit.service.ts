@@ -1,16 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { BaseRepository } from '@common/repository/base.repository';
 import { ClsService } from 'nestjs-cls';
 import { TenantClsStore } from '@common/tenant/tenant-cls.interface';
 
 import { AuditLogEntry } from './types/audit.types';
+import { READ_POOL, WRITE_POOL } from '@database/database.module';
+import { Pool } from 'pg';
 
 @Injectable()
 export class AuditService extends BaseRepository {
   private readonly logger = new Logger(AuditService.name);
 
-  constructor(cls: ClsService<TenantClsStore>) {
-    super(cls);
+  constructor(
+    cls: ClsService<TenantClsStore>,
+    @Inject(WRITE_POOL) writePool: Pool,
+    @Inject(READ_POOL) readPool: Pool,
+  ) {
+    super(cls, writePool, readPool);
   }
 
   async log(entry: AuditLogEntry): Promise<void> {
