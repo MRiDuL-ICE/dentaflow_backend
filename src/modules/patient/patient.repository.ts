@@ -117,6 +117,9 @@ export class PatientRepository extends BaseRepository {
       this.query<{ count: string }>(`SELECT COUNT(*) FROM patients WHERE ${where}`, values),
     ]);
 
+
+    console.log("dataRows",dataRows);
+
     return {
       patients: dataRows.map((r) => this.map(r)),
       total: parseInt(countRows[0].count, 10),

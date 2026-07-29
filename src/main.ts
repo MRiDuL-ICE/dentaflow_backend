@@ -28,8 +28,11 @@ async function bootstrap(): Promise<void> {
   // ── Fastify plugins ───────────────────────────────────
   await app.register(await import('@fastify/helmet'));
 
+  console.log('ALLOWED_ORIGINS:', process.env.ALLOWED_ORIGINS);
+
   await app.register(await import('@fastify/cors'), {
     origin: process.env.ALLOWED_ORIGINS?.split(',') ?? '*',
+    credentials: true,
   });
 
   await app.register(await import('@fastify/multipart'), {
@@ -52,7 +55,7 @@ async function bootstrap(): Promise<void> {
   });
 
   // ── Global prefix ─────────────────────────────────────
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api/v1');
 
   // ── Global validation ─────────────────────────────────
   app.useGlobalPipes(
@@ -75,7 +78,7 @@ async function bootstrap(): Promise<void> {
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document, {
+    SwaggerModule.setup('api/v1/docs', app, document, {
       swaggerOptions: { persistAuthorization: true },
     });
   }
@@ -85,10 +88,10 @@ async function bootstrap(): Promise<void> {
   await app.listen(port, '0.0.0.0');
 
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
-  logger.log(`🚀 API running on http://localhost:${port}/api`, 'Bootstrap');
+  logger.log(`🚀 API running on http://localhost:${port}/api/v1`, 'Bootstrap');
 
   if (process.env.NODE_ENV !== 'production') {
-    logger.log(`📋 Swagger: http://localhost:${port}/api/docs`, 'Bootstrap');
+    logger.log(`📋 Swagger: http://localhost:${port}/api/v1/docs`, 'Bootstrap');
   }
 }
 

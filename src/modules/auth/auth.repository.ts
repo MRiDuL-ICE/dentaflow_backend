@@ -11,6 +11,19 @@ export class AuthRepository {
     @Inject(READ_POOL) private readonly readPool: Pool,
   ) {}
 
+  async findClinicsByEmail(email: string) {
+    return this.readPool.query(
+      `SELECT c.name, c.slug
+     FROM public.users u
+     JOIN public.clinic_members cm ON cm.user_id = u.id
+     JOIN public.clinics c ON c.id = cm.clinic_id
+     WHERE u.email = $1
+       AND c.id != '00000000-0000-0000-0000-000000000000'
+       AND cm.is_active = true`,
+      [email],
+    );
+  }
+
   // ── Users ──────────────────────────────────────────────
 
   async findUserByEmail(email: string): Promise<UserRecord | null> {

@@ -37,17 +37,18 @@ import { ReportsModule } from '@modules/reports/reports.module';
 import { HttpLoggerMiddleware } from '@common/logger/http-logger.middleware';
 import { envValidationSchema } from '@config/env.validation';
 import { LoggerModule } from '@common/logger/logger.module';
+import { StaffModule } from '@modules/staff/staff.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig, databaseConfig, redisConfig, jwtConfig],
-        validationSchema: envValidationSchema,
-        validationOptions: {
-    allowUnknown: true,
-    abortEarly:   false,
-  },
+      validationSchema: envValidationSchema,
+      validationOptions: {
+        allowUnknown: true,
+        abortEarly: false,
+      },
     }),
     LoggerModule,
 
@@ -66,6 +67,7 @@ import { LoggerModule } from '@common/logger/logger.module';
     AuthModule,
     SuperAdminModule,
     ClinicModule,
+    StaffModule,
     AuditModule,
     PatientModule,
     OdontogramModule,
@@ -99,15 +101,13 @@ import { LoggerModule } from '@common/logger/logger.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer
-      .apply(HttpLoggerMiddleware)
-      .forRoutes('*');
+    consumer.apply(HttpLoggerMiddleware).forRoutes('*');
     consumer
       .apply(TenantMiddleware)
       .exclude(
-        { path: 'health',                 method: RequestMethod.GET },
-        { path: 'super-admin/login',      method: RequestMethod.POST },
-        { path: 'clinics/register',       method: RequestMethod.POST },
+        { path: 'health', method: RequestMethod.GET },
+        { path: 'super-admin/login', method: RequestMethod.POST },
+        { path: 'clinics/register', method: RequestMethod.POST },
         { path: 'auth/magic-link/verify', method: RequestMethod.GET },
       )
       .forRoutes('*');

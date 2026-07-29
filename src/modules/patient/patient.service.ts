@@ -43,6 +43,8 @@ export class PatientService {
       offset,
     });
 
+    console.log("patients----------------",patients);    
+
     return {
       data: patients,
       meta: {

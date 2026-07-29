@@ -10,7 +10,7 @@ import { Public } from '@common/decorators/public.decorator';
 @Controller('health')
 export class HealthController {
   constructor(
-    @Inject(WRITE_POOL)   private readonly pool:  Pool,
+    @Inject(WRITE_POOL) private readonly pool: Pool,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
 
@@ -23,23 +23,24 @@ export class HealthController {
       this.checkRedis(),
     ]);
 
-    const database: ServiceHealth = dbResult.status === 'fulfilled'
-      ? { status: 'connected', latency: dbResult.value }
-      : { status: 'error' };
+    const database: ServiceHealth =
+      dbResult.status === 'fulfilled'
+        ? { status: 'connected', latency: dbResult.value }
+        : { status: 'error' };
 
-    const redis: ServiceHealth = redisResult.status === 'fulfilled'
-      ? { status: 'connected', latency: redisResult.value }
-      : { status: 'error' };
+    const redis: ServiceHealth =
+      redisResult.status === 'fulfilled'
+        ? { status: 'connected', latency: redisResult.value }
+        : { status: 'error' };
 
-    const allHealthy = database.status === 'connected'
-                    && redis.status    === 'connected';
+    const allHealthy = database.status === 'connected' && redis.status === 'connected';
 
     return {
-      status:    allHealthy ? 'ok' : 'degraded',
-      version:   process.env.npm_package_version ?? '1.0.0',
-      uptime:    Math.floor(process.uptime()),
+      status: allHealthy ? 'ok' : 'degraded',
+      version: process.env.npm_package_version ?? '1.0.0',
+      uptime: Math.floor(process.uptime()),
       timestamp: new Date().toISOString(),
-      services:  { database, redis },
+      services: { database, redis },
     };
   }
 

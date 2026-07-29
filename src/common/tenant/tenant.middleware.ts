@@ -16,16 +16,22 @@ export class TenantMiddleware implements NestMiddleware {
     _res: FastifyReply['raw'],
     next: (err?: any) => void,
   ): Promise<void> {
+    if (req.method === 'OPTIONS') {
+      return next();
+    }
     //console.log('MIDDLEWARE URL:', req.url, (req as any).originalUrl, (req as any).routerPath);
     const rawReq = req as FastifyRequest['raw'] & { originalUrl?: string };
     const fullUrl = rawReq.originalUrl ?? req.url ?? '';
 
     if (
-      fullUrl.startsWith('/api/health') ||
-      fullUrl.startsWith('/api/docs') ||
-      fullUrl.startsWith('/api/super-admin/login') ||
-      fullUrl.startsWith('/api/clinics/register') ||
-      fullUrl.startsWith('/api/auth/magic-link/verify')
+      fullUrl.startsWith('/api/v1/health') ||
+      fullUrl.startsWith('/api/v1/docs') ||
+      fullUrl.startsWith('/api/v1/super-admin/login') ||
+      fullUrl.startsWith('/api/v1/clinics/register') ||
+      fullUrl.startsWith('/api/v1/auth/magic-link/verify') ||
+      fullUrl.startsWith('/api/v1/auth/resolve-clinic') ||
+      fullUrl.startsWith('/api/v1/auth/refresh') ||
+      fullUrl.startsWith('/api/v1/auth/logout')
     ) {
       return next();
     }

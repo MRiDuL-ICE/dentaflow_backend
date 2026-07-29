@@ -46,6 +46,13 @@ export class AuthController {
     });
   }
 
+  @Get('resolve-clinic')
+  @Public()
+  @ApiOperation({ summary: 'Find which clinics an email belongs to' })
+  async resolveClinic(@Query('email') email: string) {
+    return this.authService.resolveClinicByEmail(email);
+  }
+
   @Post('login')
   @Public()
   @HttpCode(HttpStatus.OK)

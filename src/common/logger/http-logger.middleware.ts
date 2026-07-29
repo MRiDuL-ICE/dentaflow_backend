@@ -1,43 +1,44 @@
-import {
-  Injectable, NestMiddleware,
-} from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import pino from 'pino';
 
 const httpLogger = pino({
-  level:     process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-  transport: process.env.NODE_ENV !== 'production'
-    ? { target: 'pino-pretty', options: { colorize: true } }
-    : undefined,
+  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  transport:
+    process.env.NODE_ENV !== 'production'
+      ? { target: 'pino-pretty', options: { colorize: true } }
+      : undefined,
 });
 
 @Injectable()
 export class HttpLoggerMiddleware implements NestMiddleware {
-  use(
-    req:  FastifyRequest['raw'],
-    res:  FastifyReply['raw'],
-    next: () => void,
-  ): void {
-    const start  = Date.now();
-    const { method, url } = req;
+  use(req: FastifyRequest['raw'], res: FastifyReply['raw'], next: () => void): void {
+    const start = Date.now();
+    const { method } = req;
+    const originalUrl = (req as any).originalUrl;
+    console.log('Request header, payload from frontend', req.headers);
 
     res.on('finish', () => {
       const duration = Date.now() - start;
-      const status   = res.statusCode;
+      const status = res.statusCode;
 
-      const logFn = status >= 500
-        ? httpLogger.error.bind(httpLogger)
-        : status >= 400
-          ? httpLogger.warn.bind(httpLogger)
-          : httpLogger.info.bind(httpLogger);
+      const logFn =
+        status >= 500
+          ? httpLogger.error.bind(httpLogger)
+          : status >= 400
+            ? httpLogger.warn.bind(httpLogger)
+            : httpLogger.info.bind(httpLogger);
 
-      logFn({
-        method,
-        url,
-        status,
-        duration: `${duration}ms`,
-        ip:       req.socket?.remoteAddress,
-      }, `${method} ${url} ${status} ${duration}ms`);
+      logFn(
+        {
+          method,
+          originalUrl,
+          status,
+          duration: `${duration}ms`,
+          ip: req.socket?.remoteAddress,
+        },
+        `${method} ${originalUrl} ${status} ${duration}ms`,
+      );
     });
 
     next();

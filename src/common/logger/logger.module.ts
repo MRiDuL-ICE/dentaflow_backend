@@ -9,10 +9,8 @@ const consoleFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.colorize(),
   winston.format.printf(({ timestamp, level, message, context, ...meta }) => {
-    const ctx  = context ? `[${context as string}] ` : '';
-    const metaStr = Object.keys(meta).length
-      ? ` ${JSON.stringify(meta)}`
-      : '';
+    const ctx = context ? `[${context as string}] ` : '';
+    const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
     return `${timestamp as string} ${level} ${ctx}${message as string}${metaStr}`;
   }),
 );
@@ -31,29 +29,29 @@ const jsonFormat = winston.format.combine(
         // Console — always on
         new winston.transports.Console({
           format: isDev ? consoleFormat : jsonFormat,
-          level:  isDev ? 'debug' : 'info',
+          level: isDev ? 'debug' : 'info',
         }),
 
         // Daily rotating file — production only
         ...(!isDev
           ? [
               new (winston.transports as any).DailyRotateFile({
-                filename:     '/var/log/dentaflow/app-%DATE%.log',
-                datePattern:  'YYYY-MM-DD',
+                filename: '/var/log/dentaflow/app-%DATE%.log',
+                datePattern: 'YYYY-MM-DD',
                 zippedArchive: true,
-                maxSize:      '20m',
-                maxFiles:     '14d',
-                format:       jsonFormat,
-                level:        'info',
+                maxSize: '20m',
+                maxFiles: '14d',
+                format: jsonFormat,
+                level: 'info',
               }),
               new (winston.transports as any).DailyRotateFile({
-                filename:     '/var/log/dentaflow/error-%DATE%.log',
-                datePattern:  'YYYY-MM-DD',
+                filename: '/var/log/dentaflow/error-%DATE%.log',
+                datePattern: 'YYYY-MM-DD',
                 zippedArchive: true,
-                maxSize:      '20m',
-                maxFiles:     '30d',
-                format:       jsonFormat,
-                level:        'error',
+                maxSize: '20m',
+                maxFiles: '30d',
+                format: jsonFormat,
+                level: 'error',
               }),
             ]
           : []),

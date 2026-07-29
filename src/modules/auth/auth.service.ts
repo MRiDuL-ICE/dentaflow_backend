@@ -83,6 +83,12 @@ export class AuthService {
     };
   }
 
+  // ── Resolve Clinic ──────────────────────────────────────────
+  async resolveClinicByEmail(email: string) {
+    const { rows } = await this.authRepo.findClinicsByEmail(email);
+    return rows; //}
+  }
+
   // ── Login ──────────────────────────────────────────────
 
   async login(data: { email: string; password: string; clinicId: string }): Promise<AuthResponse> {
