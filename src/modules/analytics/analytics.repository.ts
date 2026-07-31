@@ -20,14 +20,14 @@ export class AnalyticsRepository extends BaseRepository {
   async getRevenueDaily(days: number = 30) {
     return this.query<Record<string, unknown>>(
       `SELECT
-         DATE(created_at)        AS date,
+         DATE(p.created_at)        AS date,
          COUNT(DISTINCT i.id)    AS invoice_count,
          SUM(p.amount)           AS revenue,
          COUNT(DISTINCT p.id)    AS payment_count
        FROM invoices i
        JOIN payments p ON p.invoice_id = i.id
        WHERE p.created_at >= NOW() - ($1 || ' days')::interval
-       GROUP BY DATE(created_at)
+       GROUP BY DATE(p.created_at)
        ORDER BY date ASC`,
       [days],
     );

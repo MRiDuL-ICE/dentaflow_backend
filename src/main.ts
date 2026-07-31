@@ -28,10 +28,12 @@ async function bootstrap(): Promise<void> {
   // ── Fastify plugins ───────────────────────────────────
   await app.register(await import('@fastify/helmet'));
 
-  console.log('ALLOWED_ORIGINS:', process.env.ALLOWED_ORIGINS);
+//  console.log('ALLOWED_ORIGINS:', process.env.ALLOWED_ORIGINS);
 
   await app.register(await import('@fastify/cors'), {
     origin: process.env.ALLOWED_ORIGINS?.split(',') ?? '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-clinic-slug'],
     credentials: true,
   });
 
