@@ -7,7 +7,7 @@ import { GroqMessage, GroqResponse } from './groq.interface';
 export class GroqService {
   private readonly client: Groq;
   private readonly logger = new Logger(GroqService.name);
-  private readonly model = 'llama3-8b-8192';
+  private readonly model = 'llama-3.1-8b-instant';
 
   constructor(private readonly config: ConfigService) {
     this.client = new Groq({
