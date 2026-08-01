@@ -44,7 +44,8 @@ export class AppointmentService {
       resourceId: appointment['id'] as string,
     });
 
-    return appointment;
+    const full = await this.appointmentRepo.findById(appointment['id'] as string);
+    return this.toAppointmentDto(full!);
   }
 
   async findAll(query: AppointmentQueryDto) {
@@ -53,7 +54,7 @@ export class AppointmentService {
     const page = query.page ?? 1;
 
     return {
-      data: appointments,
+      data: appointments.map((row) => this.toAppointmentDto(row)),
       meta: {
         total,
         page,
@@ -66,7 +67,7 @@ export class AppointmentService {
   async findOne(id: string) {
     const appointment = await this.appointmentRepo.findById(id);
     if (!appointment) throw new NotFoundException(`Appointment not found: ${id}`);
-    return appointment;
+    return this.toAppointmentDto(appointment);
   }
 
   async updateStatus(id: string, dto: UpdateAppointmentStatusDto, userId: string) {
@@ -83,7 +84,6 @@ export class AppointmentService {
       payload: { appointmentId: id, status: dto.status, userId },
     });
 
-    // Schedule reminder when confirmed
     if (dto.status === AppointmentStatus.CONFIRMED) {
       const appt = await this.appointmentRepo.findAppointmentWithPatient(id);
       const clinicId = this.cls.get('clinicId');
@@ -114,8 +114,10 @@ export class AppointmentService {
       meta: { from: current, to: dto.status },
     });
 
-    return updated;
+    const full = await this.appointmentRepo.findById(id);
+    return this.toAppointmentDto(full!);
   }
+
   async getChairs() {
     return this.appointmentRepo.getChairs();
   }
@@ -141,5 +143,33 @@ export class AppointmentService {
     if (!allowed[from]?.includes(to)) {
       throw new BadRequestException(`Invalid status transition: ${from} → ${to}`);
     }
+  }
+
+  private toAppointmentDto(row: Record<string, unknown>) {
+    return {
+      id: row.id,
+      status: row.status,
+      scheduledAt: row.scheduled_at,
+      treatmentType: row.treatment_type,
+      durationMinutes: row.duration_minutes,
+      notes: row.notes,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      patient: {
+        id: row.patient_id,
+        firstName: row.patient_first_name,
+        lastName: row.patient_last_name,
+        email: row.patient_email,
+        phone: row.patient_phone,
+      },
+      dentist: {
+        id: row.dentist_id,
+        firstName: row.dentist_first_name,
+        lastName: row.dentist_last_name,
+        email: row.dentist_email,
+      },
+      chair: row.chair_id ? { id: row.chair_id, name: row.chair_name } : null,
+      statusHistory: row.status_history ?? [],
+    };
   }
 }

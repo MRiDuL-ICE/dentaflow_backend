@@ -1,4 +1,10 @@
-import { Injectable, ConflictException, UnauthorizedException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Inject } from '@nestjs/common';
@@ -152,5 +158,51 @@ export class SuperAdminService {
     } finally {
       client.release();
     }
+  }
+
+  async listClinics(page: number, limit: number) {
+    const offset = (page - 1) * limit;
+    const { rows } = await this.readPool.query(
+      `SELECT id, name, slug, is_active, created_at,
+            (SELECT COUNT(*) FROM public.clinic_members cm WHERE cm.clinic_id = c.id) AS member_count
+     FROM public.clinics c
+     WHERE slug != 'platform'
+     ORDER BY created_at DESC
+     LIMIT $1 OFFSET $2`,
+      [limit, offset],
+    );
+    const { rows: total } = await this.readPool.query(
+      `SELECT COUNT(*) AS count FROM public.clinics WHERE slug != 'platform'`,
+    );
+    return { data: rows, total: Number(total[0].count), page, limit };
+  }
+
+  async getClinicBySlug(slug: string) {
+    const { rows } = await this.readPool.query(
+      `SELECT c.id, c.name, c.slug, c.schema_name, c.is_active, c.created_at,
+            json_agg(json_build_object(
+              'id', u.id, 'email', u.email,
+              'firstName', u.first_name, 'lastName', u.last_name,
+              'role', r.name
+            )) FILTER (WHERE u.id IS NOT NULL) AS members
+     FROM public.clinics c
+     LEFT JOIN public.clinic_members cm ON cm.clinic_id = c.id AND cm.is_active = true
+     LEFT JOIN public.users u ON u.id = cm.user_id
+     LEFT JOIN public.roles r ON r.id = cm.role_id
+     WHERE c.slug = $1
+     GROUP BY c.id`,
+      [slug],
+    );
+    if (!rows[0]) throw new NotFoundException(`Clinic '${slug}' not found`);
+    return rows[0];
+  }
+
+  async deactivateClinic(slug: string) {
+    const { rows } = await this.writePool.query(
+      `UPDATE public.clinics SET is_active = false WHERE slug = $1 RETURNING id, name, slug`,
+      [slug],
+    );
+    if (!rows[0]) throw new NotFoundException(`Clinic '${slug}' not found`);
+    return { message: 'Clinic deactivated', clinic: rows[0] };
   }
 }

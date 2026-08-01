@@ -16,8 +16,7 @@ export class HttpLoggerMiddleware implements NestMiddleware {
     const start = Date.now();
     const { method } = req;
     const originalUrl = (req as any).originalUrl;
-  //  console.log('Request header, payload from frontend', req);
-
+    //  console.log('Request header, payload from frontend', req);
 
     res.on('finish', () => {
       const duration = Date.now() - start;

@@ -6,6 +6,7 @@ import { READ_POOL } from '@database/database.module';
 export class StaffRepository {
   constructor(
     @Inject(READ_POOL) private readonly readPool: Pool,
+    @Inject(READ_POOL) private readonly writePool: Pool,
   ) {}
 
   async findAll(clinicId: string) {
@@ -50,5 +51,24 @@ export class StaffRepository {
       [clinicId, roleId],
     );
     return rows;
+  }
+
+  async findUserByEmail(email: string) {
+    const { rows } = await this.readPool.query<{ id: string }>(
+      `SELECT id FROM public.users WHERE email = $1 AND is_active = true`,
+      [email],
+    );
+    return rows[0] ?? null;
+  }
+
+  async addMember(clinicId: string, userId: string, roleId: number) {
+    const { rows } = await this.writePool.query<{ id: string }>(
+      `INSERT INTO public.clinic_members (user_id, clinic_id, role_id)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (user_id, clinic_id, role_id) DO UPDATE SET is_active = true
+     RETURNING id`,
+      [userId, clinicId, roleId],
+    );
+    return rows[0];
   }
 }

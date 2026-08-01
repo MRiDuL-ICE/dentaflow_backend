@@ -62,7 +62,7 @@ export class AppointmentController {
     @Body() dto: UpdateAppointmentStatusDto,
     @CurrentUser() user: AuthUser,
   ) {
-  //  console.log("updateStatus", id, dto, user); 
+    //  console.log("updateStatus", id, dto, user);
     return this.appointmentService.updateStatus(id, dto, user.id);
   }
 }
