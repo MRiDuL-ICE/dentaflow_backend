@@ -1,5 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsUUID, IsDateString, IsEnum, IsInt, Min, Max, IsString, IsIn } from 'class-validator';
+import {
+  IsOptional,
+  IsUUID,
+  IsDateString,
+  IsEnum,
+  IsInt,
+  Min,
+  Max,
+  IsString,
+  IsIn,
+} from 'class-validator';
 import { AppointmentStatus } from './update-appointment.dto';
 
 export class AppointmentQueryDto {
@@ -18,7 +28,7 @@ export class AppointmentQueryDto {
   @IsEnum(AppointmentStatus)
   status?: AppointmentStatus;
 
-    @IsOptional() @IsString() chairId?: string;
+  @IsOptional() @IsString() chairId?: string;
   @IsOptional() @IsString() treatmentType?: string;
 
   @ApiProperty({ required: false })
@@ -31,12 +41,19 @@ export class AppointmentQueryDto {
   @IsDateString()
   to?: string;
 
-   // search
+  // search
   @IsOptional() @IsString() search?: string;
 
   // sorting
   @IsOptional()
-  @IsIn(['patient_name', 'dentist_name', 'patient_email', 'dentist_email', 'status', 'scheduled_at'])
+  @IsIn([
+    'patient_name',
+    'dentist_name',
+    'patient_email',
+    'dentist_email',
+    'status',
+    'scheduled_at',
+  ])
   sortBy?: string = 'scheduled_at';
 
   @IsOptional()

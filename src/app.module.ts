@@ -38,6 +38,7 @@ import { HttpLoggerMiddleware } from '@common/logger/http-logger.middleware';
 import { envValidationSchema } from '@config/env.validation';
 import { LoggerModule } from '@common/logger/logger.module';
 import { StaffModule } from '@modules/staff/staff.module';
+import { ClinicSettingsModule } from '@modules/clinic-settings/clinic-settings.module';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { StaffModule } from '@modules/staff/staff.module';
     PortalModule,
     AnalyticsModule,
     ReportsModule,
+    ClinicSettingsModule,
   ],
   providers: [
     TenantService,

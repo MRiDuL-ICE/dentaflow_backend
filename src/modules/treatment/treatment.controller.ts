@@ -120,4 +120,41 @@ export class TreatmentController {
   removeItem(@Param('itemId', ParseUUIDPipe) itemId: string, @CurrentUser() user: AuthUser) {
     return this.treatmentService.removeItem(itemId, user.id);
   }
+
+  @Post('categories')
+@Roles('clinic_owner')
+@ApiOperation({ summary: 'Create treatment category' })
+createCategory(@Body() body: { name: string; color: string }) {
+  return this.treatmentService.createCategory(body.name, body.color);
+}
+
+@Patch('categories/:id')
+@Roles('clinic_owner')
+@ApiOperation({ summary: 'Update treatment category' })
+updateCategory(
+  @Param('id', ParseUUIDPipe) id: string,
+  @Body() body: { name: string; color: string },
+) {
+  return this.treatmentService.updateCategory(id, body.name, body.color);
+}
+
+@Patch('categories/:id/toggle')
+@Roles('clinic_owner')
+@ApiOperation({ summary: 'Toggle category active state' })
+toggleCategory(
+  @Param('id', ParseUUIDPipe) id: string,
+  @Body('isActive') isActive: boolean,
+) {
+  return this.treatmentService.toggleCategory(id, isActive);
+}
+
+@Patch('catalog/:id/duration')
+@Roles('clinic_owner', 'dentist')
+@ApiOperation({ summary: 'Update treatment default duration' })
+updateDuration(
+  @Param('id', ParseUUIDPipe) id: string,
+  @Body('durationMinutes') durationMinutes: number,
+) {
+  return this.treatmentService.updateTreatmentDuration(id, durationMinutes);
+}
 }
