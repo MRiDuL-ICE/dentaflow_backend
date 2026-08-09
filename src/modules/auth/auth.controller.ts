@@ -35,13 +35,14 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User registered successfully' })
   @ApiResponse({ status: 409, description: 'Email already registered' })
   async register(@Body() dto: RegisterDto) {
-    const clinicId = this.cls.get('clinicId');
+    //const clinicId = this.cls.get('clinicId');
+    //console.log("dto",dto)
     return this.authService.register({
       email: dto.email,
       password: dto.password,
       firstName: dto.firstName,
       lastName: dto.lastName,
-      clinicId,
+      clinicId: dto.clinicId,
       roleId: dto.roleId,
     });
   }

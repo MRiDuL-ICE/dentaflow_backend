@@ -25,6 +25,7 @@ export class TenantMiddleware implements NestMiddleware {
 
     if (
       fullUrl.startsWith('/api/v1/health') ||
+      fullUrl.startsWith('/api/v1/auth/register') ||
       fullUrl.startsWith('/api/v1/docs') ||
       fullUrl.startsWith('/api/v1/super-admin/login') ||
       fullUrl.startsWith('/api/v1/clinics/register') ||

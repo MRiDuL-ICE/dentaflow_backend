@@ -138,4 +138,52 @@ export class EmailService {
 
     if (error) this.logger.error('Overdue invoice alert failed:', error);
   }
+
+  async sendStaffAdded(
+  email: string,
+  firstName: string,
+  clinicName: string,
+  role: string,
+  clinicSlug: string,
+): Promise<void> {
+  const appUrl  = this.config.get<string>('app.url');
+  const loginUrl = `${appUrl}/login/${clinicSlug}`;
+  const roleLabel = role.replace(/_/g, ' ');
+
+  const { error } = await this.resend.emails.send({
+    from: this.from,
+    to: email,
+    subject: `You've been added to ${clinicName} on DentaFlow`,
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#002972">You've joined ${clinicName}</h2>
+        <p>Hi ${firstName},</p>
+        <p>
+          You've been added to <strong>${clinicName}</strong> as a
+          <strong style="text-transform:capitalize">${roleLabel}</strong> on DentaFlow.
+        </p>
+        <p>You can sign in using your existing account:</p>
+        <a href="${loginUrl}" style="
+          display:inline-block;
+          background:#002972;
+          color:#fff;
+          padding:12px 24px;
+          border-radius:6px;
+          text-decoration:none;
+          margin:8px 0;
+        ">Sign in to DentaFlow</a>
+        <p style="color:#64748b;font-size:13px">
+          If you weren't expecting this, you can ignore this email.
+          Contact your clinic administrator if you have questions.
+        </p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    this.logger.error(`Failed to send staff-added email to ${email}:`, error);
+  } else {
+    this.logger.log(`Staff-added email sent to ${email}`);
+  }
+}
 }

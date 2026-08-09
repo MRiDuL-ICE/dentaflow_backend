@@ -22,6 +22,11 @@ export class RegisterDto {
   @MaxLength(50)
   lastName!: string;
 
+  @ApiProperty({ example: 'demo-clinic' })
+  @IsOptional()
+  @IsString()
+  clinicId?: string;
+
   @ApiProperty({
     example: 3,
     required: false,

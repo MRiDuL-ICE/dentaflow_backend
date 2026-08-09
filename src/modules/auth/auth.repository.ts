@@ -132,7 +132,7 @@ export class AuthRepository {
     await this.writePool.query(
       `INSERT INTO public.clinic_members (user_id, clinic_id, role_id)
        VALUES ($1, $2, $3)
-       ON CONFLICT (user_id, clinic_id, role_id) DO NOTHING`,
+       ON CONFLICT (user_id, clinic_id, role_id) DO UPDATE SET is_active = true`,
       [data.userId, data.clinicId, data.roleId],
     );
   }

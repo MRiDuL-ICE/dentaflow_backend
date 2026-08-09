@@ -18,6 +18,7 @@ import { JwtPayload } from './types/jwt-payload.type';
 import { AuthResponse, AuthTokens } from './types/auth-response.type';
 import { ROLE_IDS } from '@common/rbac/role-ids.constant';
 import { TenantService } from '@common/tenant/tenant.service';
+import { RegisterDto } from './dto/register.dto';
 
 const BCRYPT_ROUNDS = 12;
 const REFRESH_TTL_DAYS = 30;
@@ -37,14 +38,7 @@ export class AuthService {
 
   // ── Register ───────────────────────────────────────────
 
-  async register(data: {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    clinicId: string;
-    roleId?: number;
-  }): Promise<AuthResponse> {
+  async register(data: RegisterDto): Promise<AuthResponse> {
     const existing = await this.authRepo.findUserByEmail(data.email);
     if (existing) throw new ConflictException('Email already registered');
 
@@ -59,16 +53,20 @@ export class AuthService {
 
     const roleId = data.roleId ?? ROLE_IDS.PATIENT;
 
+    //console.log("data",data)
+
+    if (data.clinicId) {
     await this.authRepo.addClinicMember({
-      userId: user.id,
+      userId:   user.id,
       clinicId: data.clinicId,
       roleId,
     });
+  }
 
     void this.email.sendWelcome(user.email, user.firstName);
 
     const roles = [this.getRoleName(roleId)];
-    const tokens = await this.generateTokens(user.id, user.email, roles, data.clinicId);
+    const tokens = await this.generateTokens(user.id, user.email, roles, data?.clinicId ?? null);
 
     return {
       user: {
@@ -77,7 +75,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         roles,
-        clinicId: data.clinicId,
+        clinicId: data.clinicId ?? null, 
       },
       tokens,
     };
@@ -168,7 +166,7 @@ export class AuthService {
     const user = await this.authRepo.findUserByEmail(email);
     const token = uuidv4();
 
-    console.log('Clinic Slug:', clinicSlug);
+    //console.log('Clinic Slug:', clinicSlug);
 
     const expiresAt = new Date(Date.now() + MAGIC_LINK_TTL_MIN * 60 * 1000);
 
