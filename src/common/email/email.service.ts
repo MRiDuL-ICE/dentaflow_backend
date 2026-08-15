@@ -140,21 +140,21 @@ export class EmailService {
   }
 
   async sendStaffAdded(
-  email: string,
-  firstName: string,
-  clinicName: string,
-  role: string,
-  clinicSlug: string,
-): Promise<void> {
-  const appUrl  = this.config.get<string>('app.url');
-  const loginUrl = `${appUrl}/login/${clinicSlug}`;
-  const roleLabel = role.replace(/_/g, ' ');
+    email: string,
+    firstName: string,
+    clinicName: string,
+    role: string,
+    clinicSlug: string,
+  ): Promise<void> {
+    const appUrl = this.config.get<string>('app.url');
+    const loginUrl = `${appUrl}/login/${clinicSlug}`;
+    const roleLabel = role.replace(/_/g, ' ');
 
-  const { error } = await this.resend.emails.send({
-    from: this.from,
-    to: email,
-    subject: `You've been added to ${clinicName} on DentaFlow`,
-    html: `
+    const { error } = await this.resend.emails.send({
+      from: this.from,
+      to: email,
+      subject: `You've been added to ${clinicName} on DentaFlow`,
+      html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto">
         <h2 style="color:#002972">You've joined ${clinicName}</h2>
         <p>Hi ${firstName},</p>
@@ -178,12 +178,61 @@ export class EmailService {
         </p>
       </div>
     `,
-  });
+    });
 
-  if (error) {
-    this.logger.error(`Failed to send staff-added email to ${email}:`, error);
-  } else {
-    this.logger.log(`Staff-added email sent to ${email}`);
+    if (error) {
+      this.logger.error(`Failed to send staff-added email to ${email}:`, error);
+    } else {
+      this.logger.log(`Staff-added email sent to ${email}`);
+    }
   }
-}
+
+  async sendPatientPortalInvite(
+    email: string,
+    firstName: string,
+    clinicName: string,
+    clinicSlug: string,
+    isNewUser: boolean,
+  ): Promise<void> {
+    const appUrl = this.config.get<string>('app.url');
+    const loginUrl = `${appUrl}/portal/login?clinic=${clinicSlug}`;
+    const registerUrl = `${appUrl}/portal/register?clinic=${clinicSlug}`;
+
+    const ctaUrl = isNewUser ? registerUrl : loginUrl;
+    const ctaLabel = isNewUser ? 'Create your account' : 'Sign in to portal';
+    const body = isNewUser
+      ? `Your dentist at <strong>${clinicName}</strong> has created a patient record for you. Create your account to view your appointments, treatment plans, invoices, and medical records.`
+      : `Your dentist at <strong>${clinicName}</strong> has invited you to access your patient portal. Sign in to view your health records.`;
+
+    const { error } = await this.resend.emails.send({
+      from: this.from,
+      to: email,
+      subject: `Access your patient portal — ${clinicName}`,
+      html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#002972">Your Patient Portal</h2>
+        <p>Hi ${firstName},</p>
+        <p>${body}</p>
+        <a href="${ctaUrl}" style="
+          display:inline-block;
+          background:#002972;
+          color:#fff;
+          padding:12px 24px;
+          border-radius:6px;
+          text-decoration:none;
+          margin:8px 0;
+        ">${ctaLabel}</a>
+        <p style="color:#64748b;font-size:13px;margin-top:16px">
+          If you weren't expecting this, you can safely ignore this email.
+        </p>
+      </div>
+    `,
+    });
+
+    if (error) {
+      this.logger.error(`Failed to send portal invite to ${email}:`, error);
+    } else {
+      this.logger.log(`Portal invite sent to ${email}`);
+    }
+  }
 }

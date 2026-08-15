@@ -20,6 +20,7 @@ import { PatientQueryDto } from './dto/patient-query.dto';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { Roles } from '@common/rbac/roles.decorator';
 import { CurrentUser, AuthUser } from '@common/decorators/current-user.decorator';
+import { Public } from '@common/decorators/public.decorator';
 
 @ApiTags('patients')
 @ApiSecurity('clinic-slug')
@@ -67,5 +68,20 @@ export class PatientController {
   @ApiOperation({ summary: 'Soft delete patient' })
   async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
     return this.patientService.remove(id, user.id);
+  }
+
+  @Post(':id/invite-portal')
+  @Roles('clinic_owner', 'dentist', 'receptionist')
+  @ApiOperation({ summary: 'Invite patient to portal — creates account if needed' })
+  inviteToPortal(@Param('id', ParseUUIDPipe) id: string) {
+    return this.patientService.inviteToPortal(id);
+  }
+
+  // find patient by email
+  @Get('email/:email')
+  @Public()
+  @ApiOperation({ summary: 'Find patient by email' })
+  async findByEmail(@Param('email') email: string) {
+    return this.patientService.findByEmail(email);
   }
 }

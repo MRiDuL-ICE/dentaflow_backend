@@ -33,7 +33,8 @@ export class TenantMiddleware implements NestMiddleware {
       fullUrl.startsWith('/api/v1/auth/resolve-clinic') ||
       fullUrl.startsWith('/api/v1/auth/refresh') ||
       fullUrl.startsWith('/api/v1/auth/logout') ||
-      fullUrl.startsWith('/api/v1/super-admin/clinic')
+      fullUrl.startsWith('/api/v1/super-admin/clinic') ||
+      fullUrl.startsWith('/api/v1/patients/email/')
     ) {
       return next();
     }

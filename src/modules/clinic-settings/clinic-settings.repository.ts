@@ -11,7 +11,7 @@ export class ClinicSettingsRepository extends BaseRepository {
   constructor(
     cls: ClsService<TenantClsStore>,
     @Inject(WRITE_POOL) writePool: Pool,
-    @Inject(READ_POOL)  readPool:  Pool,
+    @Inject(READ_POOL) readPool: Pool,
   ) {
     super(cls, writePool, readPool);
   }
@@ -23,17 +23,17 @@ export class ClinicSettingsRepository extends BaseRepository {
 
   async update(dto: UpdateClinicSettingsDto) {
     const map: Record<string, unknown> = {
-      notify_email:                   dto.notifyEmail,
-      notify_sms:                     dto.notifySms,
-      notify_appointment_reminder:    dto.notifyAppointmentReminder,
-      notify_appointment_confirm:     dto.notifyAppointmentConfirm,
-      notify_billing:                 dto.notifyBilling,
-      appearance_theme:               dto.appearanceTheme,
-      appearance_language:            dto.appearanceLanguage,
-      appt_default_duration:          dto.apptDefaultDuration,
-      appt_slot_interval:             dto.apptSlotInterval,
-      appt_start_time:                dto.apptStartTime,
-      appt_end_time:                  dto.apptEndTime,
+      notify_email: dto.notifyEmail,
+      notify_sms: dto.notifySms,
+      notify_appointment_reminder: dto.notifyAppointmentReminder,
+      notify_appointment_confirm: dto.notifyAppointmentConfirm,
+      notify_billing: dto.notifyBilling,
+      appearance_theme: dto.appearanceTheme,
+      appearance_language: dto.appearanceLanguage,
+      appt_default_duration: dto.apptDefaultDuration,
+      appt_slot_interval: dto.apptSlotInterval,
+      appt_start_time: dto.apptStartTime,
+      appt_end_time: dto.apptEndTime,
     };
 
     // Only set columns that were actually passed
@@ -41,7 +41,7 @@ export class ClinicSettingsRepository extends BaseRepository {
     if (entries.length === 0) return this.get();
 
     const setClauses = entries.map(([col], i) => `${col} = $${i + 1}`).join(', ');
-    const values     = entries.map(([, v]) => v);
+    const values = entries.map(([, v]) => v);
 
     const rows = await this.execute<Record<string, unknown>>(
       `UPDATE clinic_settings SET ${setClauses}, updated_at = now() RETURNING *`,

@@ -186,38 +186,38 @@ export class TreatmentRepository extends BaseRepository {
   }
 
   async createCategory(name: string, color: string) {
-  const rows = await this.execute<Record<string, unknown>>(
-    `INSERT INTO treatment_categories (name, color)
+    const rows = await this.execute<Record<string, unknown>>(
+      `INSERT INTO treatment_categories (name, color)
      VALUES ($1, $2)
      ON CONFLICT (name) DO UPDATE SET color = $2, is_active = true
      RETURNING *`,
-    [name, color],
-  );
-  return rows[0];
-}
+      [name, color],
+    );
+    return rows[0];
+  }
 
-async updateCategory(id: string, name: string, color: string) {
-  const rows = await this.execute<Record<string, unknown>>(
-    `UPDATE treatment_categories SET name = $1, color = $2 WHERE id = $3 RETURNING *`,
-    [name, color, id],
-  );
-  return rows[0] ?? null;
-}
+  async updateCategory(id: string, name: string, color: string) {
+    const rows = await this.execute<Record<string, unknown>>(
+      `UPDATE treatment_categories SET name = $1, color = $2 WHERE id = $3 RETURNING *`,
+      [name, color, id],
+    );
+    return rows[0] ?? null;
+  }
 
-async toggleCategory(id: string, isActive: boolean) {
-  const rows = await this.execute<Record<string, unknown>>(
-    `UPDATE treatment_categories SET is_active = $1 WHERE id = $2 RETURNING *`,
-    [isActive, id],
-  );
-  return rows[0] ?? null;
-}
+  async toggleCategory(id: string, isActive: boolean) {
+    const rows = await this.execute<Record<string, unknown>>(
+      `UPDATE treatment_categories SET is_active = $1 WHERE id = $2 RETURNING *`,
+      [isActive, id],
+    );
+    return rows[0] ?? null;
+  }
 
-async updateTreatmentDuration(id: string, durationMinutes: number) {
-  const rows = await this.execute<Record<string, unknown>>(
-    `UPDATE treatments SET duration_minutes = $1, updated_at = now()
+  async updateTreatmentDuration(id: string, durationMinutes: number) {
+    const rows = await this.execute<Record<string, unknown>>(
+      `UPDATE treatments SET duration_minutes = $1, updated_at = now()
      WHERE id = $2 RETURNING *`,
-    [durationMinutes, id],
-  );
-  return rows[0] ?? null;
-}
+      [durationMinutes, id],
+    );
+    return rows[0] ?? null;
+  }
 }

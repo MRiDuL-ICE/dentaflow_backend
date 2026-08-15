@@ -135,53 +135,52 @@ export class TreatmentService {
     return { message: `Item ${itemId} removed` };
   }
 
- async createCategory(name: string, color: string) {
-  const category = await this.treatmentRepo.createCategory(name, color);
-  if (!category) throw new BadRequestException('Category already exists');
-   
-   await this.audit.log({
-     userId: category['created_by'] as string,
-     action: 'create',
-     resource: 'treatment_category',
-     resourceId: category['id'] as string,
-   })
+  async createCategory(name: string, color: string) {
+    const category = await this.treatmentRepo.createCategory(name, color);
+    if (!category) throw new BadRequestException('Category already exists');
 
-   return category;
+    await this.audit.log({
+      userId: category['created_by'] as string,
+      action: 'create',
+      resource: 'treatment_category',
+      resourceId: category['id'] as string,
+    });
 
-}
-async updateCategory(id: string, name: string, color: string) {
-  const category = await this.treatmentRepo.updateCategory(id, name, color);
-  if (!category) throw new BadRequestException('Category not found');
+    return category;
+  }
+  async updateCategory(id: string, name: string, color: string) {
+    const category = await this.treatmentRepo.updateCategory(id, name, color);
+    if (!category) throw new BadRequestException('Category not found');
 
-  await this.audit.log({
-    userId: category['created_by'] as string,
-    action: 'update',
-    resource: 'treatment_category',
-    resourceId: id,
-  })
+    await this.audit.log({
+      userId: category['created_by'] as string,
+      action: 'update',
+      resource: 'treatment_category',
+      resourceId: id,
+    });
 
-  return category;
-}
-async toggleCategory(id: string, isActive: boolean) {
-  const category = await this.treatmentRepo.toggleCategory(id, isActive);
-  if (!category) throw new BadRequestException('Category not found');
-  await this.audit.log({
-    userId: category['created_by'] as string,
-    action: 'update',
-    resource: 'treatment_category',
-    resourceId: id,
-  })
-  return category;
-}
-async updateTreatmentDuration(id: string, durationMinutes: number) {
-  const treatment = await this.treatmentRepo.updateTreatmentDuration(id, durationMinutes);
-  if (!treatment) throw new BadRequestException('Treatment not found');
-  await this.audit.log({
-    userId: treatment['created_by'] as string,
-    action: 'update',
-    resource: 'treatment',
-    resourceId: id,
-  })
-  return treatment;
-}
+    return category;
+  }
+  async toggleCategory(id: string, isActive: boolean) {
+    const category = await this.treatmentRepo.toggleCategory(id, isActive);
+    if (!category) throw new BadRequestException('Category not found');
+    await this.audit.log({
+      userId: category['created_by'] as string,
+      action: 'update',
+      resource: 'treatment_category',
+      resourceId: id,
+    });
+    return category;
+  }
+  async updateTreatmentDuration(id: string, durationMinutes: number) {
+    const treatment = await this.treatmentRepo.updateTreatmentDuration(id, durationMinutes);
+    if (!treatment) throw new BadRequestException('Treatment not found');
+    await this.audit.log({
+      userId: treatment['created_by'] as string,
+      action: 'update',
+      resource: 'treatment',
+      resourceId: id,
+    });
+    return treatment;
+  }
 }

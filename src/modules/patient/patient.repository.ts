@@ -299,6 +299,57 @@ export class PatientRepository extends BaseRepository {
     };
   }
 
+  async findByEmail(email: string): Promise<Partial<PatientRecord> | null> {
+    const { rows: schemaRows } = await this.readPool.query<{ schema_name: string }>(
+      `SELECT schema_name FROM public.clinics
+     WHERE is_active = true AND slug != 'platform'`,
+      [],
+    );
+
+    for (const { schema_name } of schemaRows) {
+      try {
+        const { rows } = await this.readPool.query<any>(
+          `SELECT id, first_name, last_name, phone, date_of_birth, gender
+         FROM "${schema_name}".patients
+         WHERE email = $1 AND is_deleted = false
+         LIMIT 1`,
+          [email],
+        );
+        if (rows[0]) {
+          return {
+            id: rows[0].id,
+            firstName: rows[0].first_name,
+            lastName: rows[0].last_name,
+            phone: rows[0].phone,
+            dateOfBirth: rows[0].date_of_birth,
+            gender: rows[0].gender,
+          };
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return null;
+  }
+
+  async linkClinicMember(patientId: string, clinicMemberId: string): Promise<void> {
+    await this.execute(
+      `UPDATE patients
+     SET clinic_member_id = $1, updated_at = now()
+     WHERE id = $2`,
+      [clinicMemberId, patientId],
+    );
+  }
+
+  async getClinicMemberId(patientId: string): Promise<string | null> {
+    const rows = await this.query<{ clinic_member_id: string | null }>(
+      `SELECT clinic_member_id FROM patients WHERE id = $1`,
+      [patientId],
+    );
+    return rows[0]?.clinic_member_id ?? null;
+  }
+
   async createWithRelations(dto: CreatePatientDto, createdBy: string): Promise<PatientRecord> {
     return this.transaction(async (client) => {
       const p = await this.create(dto, createdBy, client);

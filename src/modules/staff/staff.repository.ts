@@ -54,19 +54,19 @@ export class StaffRepository {
   }
 
   async findUserByEmail(email: string) {
-  const { rows } = await this.readPool.query<{
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-  }>(
-    `SELECT id, first_name, last_name, email
+    const { rows } = await this.readPool.query<{
+      id: string;
+      first_name: string;
+      last_name: string;
+      email: string;
+    }>(
+      `SELECT id, first_name, last_name, email
      FROM public.users
      WHERE email = $1 AND is_active = true`,
-    [email],
-  );
-  return rows[0] ?? null;
-}
+      [email],
+    );
+    return rows[0] ?? null;
+  }
 
   async addMember(clinicId: string, userId: string, roleId: number) {
     const { rows } = await this.writePool.query<{ id: string }>(

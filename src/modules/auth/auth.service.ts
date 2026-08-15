@@ -40,42 +40,53 @@ export class AuthService {
 
   async register(data: RegisterDto): Promise<AuthResponse> {
     const existing = await this.authRepo.findUserByEmail(data.email);
-    if (existing) throw new ConflictException('Email already registered');
+    let user = existing;
+    if (existing && existing.passwordHash) {
+      throw new ConflictException('Email already registered');
+    }
 
     const passwordHash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
 
-    const user = await this.authRepo.createUser({
-      email: data.email,
-      passwordHash,
-      firstName: data.firstName,
-      lastName: data.lastName,
-    });
+    if (existing && !existing.passwordHash) {
+      // Set password on invited user
+      await this.authRepo.setPassword(existing.id, passwordHash);
+    } else {
+      user = await this.authRepo.createUser({
+        email: data.email,
+        passwordHash,
+        firstName: data.firstName,
+        lastName: data.lastName,
+      });
+    }
 
     const roleId = data.roleId ?? ROLE_IDS.PATIENT;
 
     //console.log("data",data)
 
     if (data.clinicId) {
-    await this.authRepo.addClinicMember({
-      userId:   user.id,
-      clinicId: data.clinicId,
-      roleId,
-    });
-  }
+      await this.authRepo.addClinicMember({
+        userId: user!.id,
+        clinicId: data.clinicId,
+        roleId,
+      });
 
-    void this.email.sendWelcome(user.email, user.firstName);
+      // Link to existing patient record if email matches
+      await this.authRepo.linkPatientIfExists(user!.id, data.clinicId, roleId);
+    }
 
-    const roles = [this.getRoleName(roleId)];
-    const tokens = await this.generateTokens(user.id, user.email, roles, data?.clinicId ?? null);
+    if (!existing) void this.email.sendWelcome(user!.email, user!.firstName);
+
+    const roles = data.clinicId ? [this.getRoleName(roleId)] : [];
+    const tokens = await this.generateTokens(user!.id, user!.email, roles, data.clinicId ?? null);
 
     return {
       user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        id: user!.id,
+        email: user!.email,
+        firstName: user!.firstName,
+        lastName: user!.lastName,
         roles,
-        clinicId: data.clinicId ?? null, 
+        clinicId: data.clinicId ?? null,
       },
       tokens,
     };
@@ -83,8 +94,8 @@ export class AuthService {
 
   // ── Resolve Clinic ──────────────────────────────────────────
   async resolveClinicByEmail(email: string) {
-    const { rows } = await this.authRepo.findClinicsByEmail(email);
-    return rows; //}
+    const result = await this.authRepo.findClinicsByEmail(email);
+    return { data: result.rows };
   }
 
   // ── Login ──────────────────────────────────────────────

@@ -16,19 +16,20 @@ export class PortalRepository extends BaseRepository {
   }
 
   // Find patient record linked to this user
-  async findPatientByUserId(userId: string, clinicId: string): Promise<{ id: string }> {
-    const patient = await this.query<{ id: string }>(
-      `SELECT p.is_deleted
-       FROM patients p
-       JOIN public.clinic_members cm
-         ON cm.user_id = $1
-         AND cm.clinic_id = $2
-       WHERE p.clinic_member_id = cm.id
-         AND p.is_deleted = false
-       LIMIT 1`,
+  async findPatientByUserId(userId: string, clinicId: string): Promise<{ id: string } | null> {
+    const rows = await this.query<{ id: string }>(
+      `SELECT p.id
+     FROM patients p
+     JOIN public.clinic_members cm
+       ON cm.id = p.clinic_member_id
+     WHERE cm.user_id  = $1
+       AND cm.clinic_id = $2
+       AND cm.is_active = true
+       AND p.is_deleted = false
+     LIMIT 1`,
       [userId, clinicId],
     );
-    return patient[0] ?? null;
+    return rows[0] ?? null;
   }
 
   async getPatientRecord(patientId: string) {

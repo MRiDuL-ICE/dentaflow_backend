@@ -16,10 +16,14 @@ export class ClinicSettingsController {
   @Get()
   @Roles('clinic_owner', 'dentist', 'receptionist')
   @ApiOperation({ summary: 'Get clinic settings' })
-  get() { return this.service.get(); }
+  get() {
+    return this.service.get();
+  }
 
   @Patch()
   @Roles('clinic_owner')
   @ApiOperation({ summary: 'Update clinic settings (owner only)' })
-  update(@Body() dto: UpdateClinicSettingsDto) { return this.service.update(dto); }
+  update(@Body() dto: UpdateClinicSettingsDto) {
+    return this.service.update(dto);
+  }
 }

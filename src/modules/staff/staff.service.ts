@@ -8,15 +8,15 @@ import { READ_POOL } from '@database/database.module';
 import { EmailService } from '@common/email/email.service';
 
 const ROLE_MAP: Record<string, number> = {
-  dentist:      ROLE_IDS.DENTIST,
+  dentist: ROLE_IDS.DENTIST,
   receptionist: ROLE_IDS.RECEPTIONIST,
 };
 
 @Injectable()
 export class StaffService {
   constructor(
-    private readonly staffRepo:    StaffRepository,
-    private readonly cls:          ClsService<TenantClsStore>,
+    private readonly staffRepo: StaffRepository,
+    private readonly cls: ClsService<TenantClsStore>,
     private readonly emailService: EmailService,
     @Inject(READ_POOL) private readonly readPool: Pool,
   ) {}
@@ -56,14 +56,10 @@ export class StaffService {
     // Send notification — fire and forget, don't block the response
     if (clinic) {
       this.emailService
-        .sendStaffAdded(
-          user.email,
-          user.first_name,
-          clinic.name,
-          role,
-          clinic.slug,
-        )
-        .catch(() => { /* already logged inside EmailService */ });
+        .sendStaffAdded(user.email, user.first_name, clinic.name, role, clinic.slug)
+        .catch(() => {
+          /* already logged inside EmailService */
+        });
     }
 
     return { message: `${email} added as ${role}` };

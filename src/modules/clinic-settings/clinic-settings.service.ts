@@ -6,6 +6,10 @@ import { UpdateClinicSettingsDto } from './dto/update-clinic-settings.dto';
 export class ClinicSettingsService {
   constructor(private readonly repo: ClinicSettingsRepository) {}
 
-  get()                              { return this.repo.get();    }
-  update(dto: UpdateClinicSettingsDto) { return this.repo.update(dto); }
+  get() {
+    return this.repo.get();
+  }
+  update(dto: UpdateClinicSettingsDto) {
+    return this.repo.update(dto);
+  }
 }

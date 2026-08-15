@@ -2,6 +2,7 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { Pool } from 'pg';
 import { WRITE_POOL, READ_POOL } from '@database/database.module';
 import { ClinicMemberRecord, UserRecord } from './types/auth.type';
+import { ROLE_IDS } from '@common/rbac/role-ids.constant';
 
 @Injectable()
 export class AuthRepository {
@@ -12,16 +13,22 @@ export class AuthRepository {
   ) {}
 
   async findClinicsByEmail(email: string) {
-    return this.readPool.query(
-      `SELECT c.name, c.slug
-     FROM public.users u
-     JOIN public.clinic_members cm ON cm.user_id = u.id
-     JOIN public.clinics c ON c.id = cm.clinic_id
-     WHERE u.email = $1
-       AND c.id != '00000000-0000-0000-0000-000000000000'
-       AND cm.is_active = true`,
-      [email],
-    );
+    try {
+      return await this.readPool.query(
+        `SELECT c.id, c.name, c.slug
+       FROM public.clinics c
+       JOIN public.clinic_members cm ON cm.clinic_id = c.id
+       JOIN public.users u ON u.id = cm.user_id
+       WHERE u.email = $1
+         AND cm.is_active = true
+         AND c.is_active = true
+         AND c.slug != 'platform'`,
+        [email],
+      );
+    } catch (err) {
+      console.error('findClinicsByEmail error:', err);
+      throw err;
+    }
   }
 
   // ── Users ──────────────────────────────────────────────
@@ -269,6 +276,53 @@ export class AuthRepository {
        SET used_at = now()
        WHERE token = $1`,
       [token],
+    );
+  }
+
+  async setPassword(userId: string, passwordHash: string): Promise<void> {
+    await this.writePool.query(
+      `UPDATE public.users SET password_hash = $1, updated_at = now() WHERE id = $2`,
+      [passwordHash, userId],
+    );
+  }
+
+  // After adding clinic_member, link patient record if email matches
+  async linkPatientIfExists(userId: string, clinicId: string, roleId: number): Promise<void> {
+    if (roleId !== ROLE_IDS.PATIENT) return;
+
+    // Get user email
+    const { rows: userRows } = await this.readPool.query<{ email: string }>(
+      `SELECT email FROM public.users WHERE id = $1`,
+      [userId],
+    );
+    const email = userRows[0]?.email;
+    if (!email) return;
+
+    // Get clinic schema
+    const { rows: clinicRows } = await this.readPool.query<{ schema_name: string }>(
+      `SELECT schema_name FROM public.clinics WHERE id = $1`,
+      [clinicId],
+    );
+    const schema = clinicRows[0]?.schema_name;
+    if (!schema) return;
+
+    // Get clinic_member id
+    const { rows: memberRows } = await this.readPool.query<{ id: string }>(
+      `SELECT id FROM public.clinic_members
+     WHERE user_id = $1 AND clinic_id = $2 AND role_id = $3`,
+      [userId, clinicId, roleId],
+    );
+    const clinicMemberId = memberRows[0]?.id;
+    if (!clinicMemberId) return;
+
+    // Link patient in tenant schema
+    await this.writePool.query(
+      `UPDATE "${schema}".patients
+     SET clinic_member_id = $1, updated_at = now()
+     WHERE email = $2
+       AND clinic_member_id IS NULL
+       AND is_deleted = false`,
+      [clinicMemberId, email],
     );
   }
 }
